@@ -1,0 +1,1873 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CHRONOS // by Hasan Urun</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020408;
+      --bg2: #050c14;
+      --panel: #070f1a;
+      --panel2: #0a1525;
+      --border: #0f2a45;
+      --border2: #1a3d5c;
+      --accent: #00d4ff;
+      --accent2: #0088bb;
+      --accent3: #00ffaa;
+      --accent4: #ff6b35;
+      --warn: #ffaa00;
+      --danger: #ff2244;
+      --text: #c8e8f8;
+      --text2: #6a9ab8;
+      --text3: #3a6a88;
+      --glow: rgba(0, 212, 255, 0.15);
+      --glow2: rgba(0, 255, 170, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 212, 255, 0.015) 2px,
+        rgba(0, 212, 255, 0.015) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Animated corner grid bg */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border2);
+      border-top: 3px solid var(--accent);
+      background: linear-gradient(135deg, var(--panel) 0%, var(--bg2) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 200px; height: 100%;
+      background: linear-gradient(90deg, var(--glow), transparent);
+      pointer-events: none;
+    }
+
+    .header-left h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 4px;
+      text-shadow: 0 0 20px rgba(0,212,255,0.5), 0 0 60px rgba(0,212,255,0.2);
+    }
+
+    .header-left .tagline {
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 3px;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+    }
+
+    .status-dot::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent3);
+      box-shadow: 0 0 8px var(--accent3);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .sys-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+    }
+
+    .sys-stat strong {
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      padding: 10px 24px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text3);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .tab:hover { color: var(--text2); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(0,212,255,0.05);
+    }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── DATE NAV ── */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 14px 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+    }
+
+    .date-nav select {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      padding: 6px 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .date-nav select:focus { border-color: var(--accent); }
+
+    .nav-btn {
+      font-family: 'Space Mono', monospace;
+      background: var(--panel2);
+      border: 1px solid var(--border2);
+      color: var(--accent);
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.15s;
+    }
+
+    .nav-btn:hover {
+      background: var(--glow);
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--glow);
+    }
+
+    .date-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      flex: 1;
+    }
+
+    .today-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      padding: 6px 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.15s;
+    }
+
+    .today-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── MAIN GRID ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+      position: relative;
+    }
+
+    .panel::before {
+      content: attr(data-label);
+      position: absolute;
+      top: -1px; left: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 2px 10px;
+    }
+
+    .panel-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── TOTAL DISPLAY ── */
+    .total-display {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .total-cell {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-top: 2px solid var(--accent2);
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .total-cell::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+    }
+
+    .total-cell .t-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .total-cell .t-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(0,212,255,0.4);
+      line-height: 1;
+    }
+
+    .total-cell .t-unit {
+      font-size: 9px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    .total-formatted {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-left: 3px solid var(--accent3);
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .total-formatted .tf-label {
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 2px;
+    }
+
+    .total-formatted .tf-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent3);
+      letter-spacing: 4px;
+      text-shadow: 0 0 15px rgba(0,255,170,0.4);
+    }
+
+    /* ── TASK ENTRIES ── */
+    .task-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .task-entry {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 2px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .task-entry:hover {
+      border-left-color: var(--accent);
+      background: rgba(0, 212, 255, 0.04);
+    }
+
+    .task-entry.has-count {
+      border-left-color: var(--accent3);
+    }
+
+    .task-info { min-width: 0; }
+
+    .task-name {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-meta {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .task-subtotal {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: var(--accent3);
+      min-width: 90px;
+      text-align: right;
+    }
+
+    .count-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cnt-btn {
+      width: 28px; height: 28px;
+      background: var(--panel2);
+      border: 1px solid var(--border2);
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-family: monospace;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+
+    .cnt-btn:hover {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 0 12px var(--glow);
+    }
+
+    .cnt-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 28px;
+      text-align: center;
+    }
+
+    /* ── ADD TASK ── */
+    .add-task-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .add-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .add-row input {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      padding: 8px 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .add-row input:focus { border-color: var(--accent); }
+    .add-row input[type="text"] { flex: 1; }
+    .add-row input[type="number"] { width: 60px; text-align: center; }
+
+    .add-row .add-label {
+      font-size: 10px;
+      color: var(--text3);
+      align-self: center;
+      white-space: nowrap;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 8px 16px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: #00aadd;
+      box-shadow: 0 0 16px var(--glow);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--text2);
+      color: var(--text);
+    }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-sm { padding: 5px 10px; font-size: 10px; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── LAST SESSION ── */
+    .last-session {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      position: relative;
+    }
+
+    .last-session::before {
+      content: 'LAST SESSION';
+      position: absolute;
+      top: -1px; left: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--accent4);
+      padding: 2px 8px;
+    }
+
+    .ls-date {
+      font-size: 10px;
+      color: var(--text3);
+      margin-bottom: 8px;
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+
+    .ls-time {
+      font-family: 'Orbitron', monospace;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent4);
+      letter-spacing: 2px;
+      text-shadow: 0 0 15px rgba(255,107,53,0.4);
+    }
+
+    .ls-tasks {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ls-task {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text3);
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ls-task:last-child { border-bottom: none; }
+    .ls-task .n { color: var(--text2); }
+    .ls-task .v { color: var(--accent3); font-family: 'Orbitron', monospace; }
+
+    /* ── MONTHLY SUMMARY SIDEBAR ── */
+    .month-summary-side {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      position: relative;
+    }
+
+    .month-summary-side::before {
+      content: 'MONTHLY';
+      position: absolute;
+      top: -1px; left: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--accent3);
+      padding: 2px 8px;
+    }
+
+    .ms-total {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent3);
+      letter-spacing: 2px;
+      margin-top: 6px;
+      text-shadow: 0 0 15px rgba(0,255,170,0.3);
+    }
+
+    .ms-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
+
+    .ms-days {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 12px;
+    }
+
+    .ms-day {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text3);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: monospace;
+    }
+
+    .ms-day:hover { border-color: var(--accent2); color: var(--text); }
+    .ms-day.has-data { border-color: var(--accent3); color: var(--accent3); background: rgba(0,255,170,0.06); }
+    .ms-day.today { border-color: var(--accent); color: var(--accent); }
+    .ms-day.current { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    /* ── EXPORT PANEL ── */
+    .export-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      position: relative;
+    }
+
+    .export-panel::before {
+      content: 'EXPORT';
+      position: absolute;
+      top: -1px; left: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--warn);
+      padding: 2px 8px;
+    }
+
+    .export-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    /* ── DASHBOARD ── */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .metric-card.accent::after { background: var(--accent); }
+    .metric-card.green::after { background: var(--accent3); }
+    .metric-card.orange::after { background: var(--accent4); }
+    .metric-card.warn::after { background: var(--warn); }
+
+    .mc-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .mc-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .mc-sub {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 6px;
+    }
+
+    .mc-value.cyan { color: var(--accent); text-shadow: 0 0 15px rgba(0,212,255,0.3); }
+    .mc-value.green { color: var(--accent3); text-shadow: 0 0 15px rgba(0,255,170,0.3); }
+    .mc-value.orange { color: var(--accent4); text-shadow: 0 0 15px rgba(255,107,53,0.3); }
+
+    /* ── CHART ── */
+    .chart-container {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .chart-container::before {
+      content: 'WEEKLY ACTIVITY';
+      position: absolute;
+      top: -1px; left: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--accent2);
+      padding: 2px 10px;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 100px;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      min-height: 2px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .bar.today-bar { background: linear-gradient(180deg, var(--accent3), #00aa77); }
+    .bar:hover { opacity: 0.8; }
+
+    .bar-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 1px;
+    }
+
+    .bar-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 8px;
+      color: var(--text3);
+    }
+
+    /* ── TASK BREAKDOWN ── */
+    .task-breakdown {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+      position: relative;
+    }
+
+    .task-breakdown::before {
+      content: 'ALL-TIME BREAKDOWN';
+      position: absolute;
+      top: -1px; left: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--accent3);
+      padding: 2px 10px;
+    }
+
+    .breakdown-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .breakdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bi-name { font-size: 11px; color: var(--text2); min-width: 120px; }
+    .bi-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      position: relative;
+    }
+
+    .bi-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: linear-gradient(90deg, var(--accent3), var(--accent));
+      transition: width 0.5s ease;
+    }
+
+    .bi-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: var(--accent3);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    /* ── ACTIVITY CALENDAR ── */
+    .activity-calendar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .activity-calendar::before {
+      content: 'ACTIVITY LOG';
+      position: absolute;
+      top: -1px; left: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--warn);
+      padding: 2px 10px;
+    }
+
+    .cal-row {
+      display: grid;
+      grid-template-columns: 60px repeat(7, 1fr);
+      gap: 4px;
+      margin-top: 12px;
+    }
+
+    .cal-header {
+      display: grid;
+      grid-template-columns: 60px repeat(7, 1fr);
+      gap: 4px;
+      margin-top: 12px;
+    }
+
+    .cal-head {
+      font-size: 9px;
+      color: var(--text3);
+      text-align: center;
+      letter-spacing: 1px;
+      padding: 4px;
+    }
+
+    .cal-week-label {
+      font-size: 9px;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+    }
+
+    .cal-cell {
+      aspect-ratio: 1;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--bg2);
+      color: var(--text3);
+      max-width: 32px;
+      max-height: 32px;
+    }
+
+    .cal-cell:hover { border-color: var(--accent2); }
+    .cal-cell.has-data-1 { background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.2); color: var(--text2); }
+    .cal-cell.has-data-2 { background: rgba(0,212,255,0.2); border-color: rgba(0,212,255,0.4); color: var(--accent); }
+    .cal-cell.has-data-3 { background: rgba(0,212,255,0.35); border-color: var(--accent2); color: var(--accent); }
+    .cal-cell.has-data-4 { background: rgba(0,255,170,0.2); border-color: var(--accent3); color: var(--accent3); }
+    .cal-cell.today-cell { border-color: var(--accent) !important; color: var(--accent); box-shadow: 0 0 6px var(--glow); }
+    .cal-cell.empty { background: transparent; border: none; cursor: default; }
+
+    /* ── MONTHLY DETAILS ── */
+    .monthly-details {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+      position: relative;
+    }
+
+    .monthly-details::before {
+      content: 'MONTHLY DETAILS';
+      position: absolute;
+      top: -1px; left: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 2px 10px;
+    }
+
+    .monthly-row {
+      display: grid;
+      grid-template-columns: 60px 80px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .monthly-row:last-child { border-bottom: none; }
+    .monthly-row .mr-day { color: var(--text3); }
+    .monthly-row .mr-time { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--accent); }
+    .monthly-row .mr-bar { flex: 1; height: 4px; background: var(--border); position: relative; overflow: hidden; }
+    .monthly-row .mr-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent2); }
+    .monthly-row .mr-link { font-size: 10px; color: var(--text3); cursor: pointer; }
+    .monthly-row .mr-link:hover { color: var(--accent); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .es-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .es-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      color: var(--text3);
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .es-sub { font-size: 11px; color: var(--text3); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .sidebar { flex-direction: row; flex-wrap: wrap; }
+      .sidebar > * { flex: 1; min-width: 280px; }
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+      .total-display { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .header-right { display: none; }
+      .total-display { grid-template-columns: repeat(3, 1fr); }
+      .total-cell .t-value { font-size: 22px; }
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .view.active { animation: fadeIn 0.2s ease; }
+
+    .corner-deco {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-color: var(--accent);
+      border-style: solid;
+    }
+
+    .corner-tl { top: 0; left: 0; border-width: 1px 0 0 1px; }
+    .corner-tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
+    .corner-bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+    .corner-br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="corner-deco corner-tl"></div>
+    <div class="corner-deco corner-br"></div>
+    <div class="header-left">
+      <h1>CHRONOS</h1>
+      <div class="tagline">TIMESHEET SYSTEM // by Hasan Urun</div>
+    </div>
+    <div class="header-right">
+      <div class="sys-stats">
+        <div class="sys-stat"><div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:2px">DAYS LOGGED</div><strong id="hdrDays">0</strong></div>
+        <div class="sys-stat"><div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:2px">TOTAL HRS</div><strong id="hdrHrs">0</strong></div>
+        <div class="sys-stat"><div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:2px">THIS MONTH</div><strong id="hdrMonth">0h</strong></div>
+      </div>
+      <div class="status-dot" id="onlineStatus">ONLINE</div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-view="log">📋 DAILY LOG</button>
+    <button class="tab" data-view="dashboard">📊 DASHBOARD</button>
+    <button class="tab" data-view="monthly">📅 MONTHLY</button>
+  </div>
+
+  <!-- ══ VIEW: DAILY LOG ══ -->
+  <div class="view active" id="view-log">
+    <div class="date-nav">
+      <button class="nav-btn" id="prevDay">◀</button>
+      <button class="nav-btn" id="nextDay">▶</button>
+      <div class="date-label" id="dateLabel">SELECT DATE</div>
+      <select id="yearSelect"></select>
+      <select id="monthSelect"></select>
+      <select id="daySelect"></select>
+      <button class="today-btn" id="todayBtn">TODAY</button>
+      <button class="btn btn-ghost btn-sm" id="clearAllBtn">⚠ CLEAR ALL</button>
+    </div>
+
+    <div class="main-grid">
+      <!-- LEFT: Day tasks -->
+      <div>
+        <div class="panel" data-label="TODAY'S TASKS">
+          <div style="height:12px"></div>
+
+          <!-- Totals -->
+          <div class="total-display">
+            <div class="total-cell">
+              <div class="t-label">Hours</div>
+              <div class="t-value" id="totalH">00</div>
+              <div class="t-unit">HRS</div>
+            </div>
+            <div class="total-cell">
+              <div class="t-label">Minutes</div>
+              <div class="t-value" id="totalM">00</div>
+              <div class="t-unit">MIN</div>
+            </div>
+            <div class="total-cell">
+              <div class="t-label">Seconds</div>
+              <div class="t-value" id="totalS">00</div>
+              <div class="t-unit">SEC</div>
+            </div>
+          </div>
+
+          <div class="total-formatted">
+            <div class="tf-label">TOTAL SESSION TIME</div>
+            <div class="tf-value" id="totalFormatted">00:00:00</div>
+          </div>
+
+          <!-- Task list for this day -->
+          <div id="dayTaskList" class="task-list"></div>
+
+          <!-- Empty state -->
+          <div id="dayEmptyState" class="empty-state" style="display:none">
+            <div class="es-icon">⬡</div>
+            <div class="es-title">NO TASKS YET</div>
+            <div class="es-sub">Add tasks below to start logging</div>
+          </div>
+
+          <!-- Add task for THIS DAY -->
+          <div class="add-task-section">
+            <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px">ADD TASK TO THIS DAY</div>
+            <div class="add-row">
+              <input type="text" id="newTaskName" placeholder="Task name..." />
+              <input type="number" id="newTaskMins" placeholder="0" min="0" step="1" title="Minutes" />
+              <span class="add-label">min</span>
+              <input type="number" id="newTaskSecs" placeholder="0" min="0" max="59" step="1" title="Seconds" />
+              <span class="add-label">sec</span>
+              <button class="btn btn-primary btn-sm" id="addTaskBtn">+ ADD</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sidebar -->
+      <div class="sidebar">
+
+        <!-- Last session -->
+        <div class="last-session" id="lastSessionPanel">
+          <div class="ls-date" id="lsDate">—</div>
+          <div class="ls-time" id="lsTime">--:--:--</div>
+          <div class="ls-tasks" id="lsTasks"></div>
+        </div>
+
+        <!-- Monthly mini -->
+        <div class="month-summary-side">
+          <div class="ms-label" style="margin-top:6px" id="msSideLabel">THIS MONTH</div>
+          <div class="ms-total" id="msSideTotal">00:00:00</div>
+          <div class="ms-days" id="msSideDays"></div>
+        </div>
+
+        <!-- Export -->
+        <div class="export-panel">
+          <div style="height:6px"></div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:10px">Export your timesheet data</div>
+          <div class="export-btns">
+            <button class="btn btn-ghost btn-sm" id="exportCSV">↓ EXPORT CSV</button>
+            <button class="btn btn-ghost btn-sm" id="exportJSON">↓ EXPORT JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: DASHBOARD ══ -->
+  <div class="view" id="view-dashboard">
+    <div class="dashboard-grid">
+      <div class="metric-card accent">
+        <div class="mc-label">Total Days Logged</div>
+        <div class="mc-value cyan" id="dbDays">0</div>
+        <div class="mc-sub">days with activity</div>
+      </div>
+      <div class="metric-card green">
+        <div class="mc-label">All-Time Total</div>
+        <div class="mc-value green" id="dbTotal">0h 0m</div>
+        <div class="mc-sub">across all sessions</div>
+      </div>
+      <div class="metric-card orange">
+        <div class="mc-label">This Month</div>
+        <div class="mc-value orange" id="dbMonth">0h 0m</div>
+        <div class="mc-sub" id="dbMonthLabel">current month</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="mc-label">This Week</div>
+        <div class="mc-value" style="color:var(--warn)" id="dbWeek">0h 0m</div>
+        <div class="mc-sub">last 7 days</div>
+      </div>
+      <div class="metric-card accent">
+        <div class="mc-label">Best Day</div>
+        <div class="mc-value cyan" id="dbBest">0h 0m</div>
+        <div class="mc-sub" id="dbBestDate">—</div>
+      </div>
+      <div class="metric-card green">
+        <div class="mc-label">Daily Average</div>
+        <div class="mc-value green" id="dbAvg">0h 0m</div>
+        <div class="mc-sub">on logged days</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div style="height:10px"></div>
+      <div class="bar-chart" id="weekChart"></div>
+    </div>
+
+    <div class="task-breakdown">
+      <div style="height:10px"></div>
+      <div id="breakdownList" class="breakdown-list">
+        <div class="es-sub" style="padding:20px 0">No data yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VIEW: MONTHLY ══ -->
+  <div class="view" id="view-monthly">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px 20px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--warn)">
+      <button class="nav-btn" id="prevMonth">◀</button>
+      <div style="font-family:'Orbitron',monospace;font-size:13px;color:var(--warn);letter-spacing:3px;flex:1" id="monthLabel">—</div>
+      <button class="nav-btn" id="nextMonth">▶</button>
+      <div style="font-family:'Orbitron',monospace;font-size:12px;color:var(--accent3)" id="monthTotalLabel">TOTAL: 00:00:00</div>
+    </div>
+
+    <div class="activity-calendar" id="calendarPanel">
+      <div style="height:10px"></div>
+      <div class="cal-header" id="calHeader"></div>
+      <div id="calGrid"></div>
+    </div>
+
+    <div class="monthly-details">
+      <div style="height:10px"></div>
+      <div id="monthlyRows"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'chronos_v1';
+let data = loadData();
+
+// ── DATA STRUCTURE ──
+// data = {
+//   days: {
+//     "2024-01-15": {
+//       tasks: [ { id, name, minutes, seconds, count } ]
+//     }
+//   }
+// }
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      // Migrate old format
+      if (d.taskTypes) return migrateLegacy(d);
+      return d;
+    }
+  } catch(e) {}
+  return { days: {} };
+}
+
+function migrateLegacy(old) {
+  const newData = { days: {} };
+  Object.keys(old.days || {}).forEach(dateStr => {
+    const oldDay = old.days[dateStr];
+    const tasks = [];
+    (old.taskTypes || []).forEach(tt => {
+      const count = oldDay[tt.id] || 0;
+      if (count > 0) {
+        tasks.push({ id: tt.id, name: tt.name, minutes: tt.minutes || 0, seconds: tt.seconds || 0, count });
+      }
+    });
+    if (tasks.length > 0) newData.days[dateStr] = { tasks };
+  });
+  return newData;
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function getDayData(dateStr) {
+  if (!data.days[dateStr]) data.days[dateStr] = { tasks: [] };
+  if (!data.days[dateStr].tasks) data.days[dateStr].tasks = [];
+  return data.days[dateStr];
+}
+
+function calcDayTotalSecs(dateStr) {
+  const day = data.days[dateStr];
+  if (!day || !day.tasks) return 0;
+  return day.tasks.reduce((sum, t) => sum + ((t.minutes * 60 + t.seconds) * t.count), 0);
+}
+
+function secsToHMS(totalSecs) {
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = totalSecs % 60;
+  return { h, m, s };
+}
+
+function secsToFormatted(totalSecs) {
+  const { h, m, s } = secsToHMS(totalSecs);
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+function secsToHM(totalSecs) {
+  const { h, m } = secsToHMS(totalSecs);
+  return `${h}h ${m}m`;
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function uid() { return 't' + Date.now() + Math.random().toString(36).slice(2, 6); }
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+// ── CURRENT DATE STATE ──
+let currentDate = todayStr();
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth(); // 0-based
+
+// ── DOM ──
+const yearSelect = document.getElementById('yearSelect');
+const monthSelect = document.getElementById('monthSelect');
+const daySelect = document.getElementById('daySelect');
+const dateLabel = document.getElementById('dateLabel');
+const dayTaskList = document.getElementById('dayTaskList');
+const dayEmptyState = document.getElementById('dayEmptyState');
+
+// ── INIT DATE SELECTORS ──
+function initSelectors() {
+  const cur = new Date();
+  const curYear = cur.getFullYear();
+
+  yearSelect.innerHTML = '';
+  for (let y = curYear - 5; y <= curYear + 2; y++) {
+    yearSelect.innerHTML += `<option value="${y}"${y===curYear?' selected':''}>${y}</option>`;
+  }
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  monthSelect.innerHTML = '';
+  months.forEach((m, i) => {
+    monthSelect.innerHTML += `<option value="${i+1}"${i===cur.getMonth()?' selected':''}>${m}</option>`;
+  });
+
+  updateDayOptions();
+  daySelect.value = cur.getDate();
+  updateDateFromSelects();
+}
+
+function updateDayOptions() {
+  const y = parseInt(yearSelect.value);
+  const mo = parseInt(monthSelect.value);
+  const daysInMonth = new Date(y, mo, 0).getDate();
+  const prev = parseInt(daySelect.value) || 1;
+  daySelect.innerHTML = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    daySelect.innerHTML += `<option value="${d}"${d===prev?' selected':''}>${d}</option>`;
+  }
+}
+
+function updateDateFromSelects() {
+  const y = yearSelect.value;
+  const mo = String(monthSelect.value).padStart(2,'0');
+  const d = String(daySelect.value).padStart(2,'0');
+  currentDate = `${y}-${mo}-${d}`;
+  renderDateLabel();
+  renderDayView();
+  renderMonthlySide();
+}
+
+function renderDateLabel() {
+  const dt = new Date(currentDate + 'T12:00:00');
+  const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  dateLabel.textContent = `${days[dt.getDay()]}  ${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+}
+
+function navigateDay(delta) {
+  const parts = currentDate.split('-');
+  const dt = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  dt.setDate(dt.getDate() + delta);
+  yearSelect.value = dt.getFullYear();
+  monthSelect.value = dt.getMonth() + 1;
+  updateDayOptions();
+  daySelect.value = dt.getDate();
+  updateDateFromSelects();
+}
+
+// ── RENDER DAY VIEW ──
+function renderDayView() {
+  const dayData = getDayData(currentDate);
+  const tasks = dayData.tasks;
+
+  dayTaskList.innerHTML = '';
+
+  if (tasks.length === 0) {
+    dayEmptyState.style.display = 'block';
+  } else {
+    dayEmptyState.style.display = 'none';
+    tasks.forEach(task => {
+      const taskSecs = (task.minutes * 60 + task.seconds) * task.count;
+      const div = document.createElement('div');
+      div.className = 'task-entry' + (task.count > 0 ? ' has-count' : '');
+      div.innerHTML = `
+        <div class="task-info">
+          <div class="task-name">${escHtml(task.name)}</div>
+          <div class="task-meta">${task.minutes}min ${task.seconds}sec per unit</div>
+        </div>
+        <div class="count-ctrl">
+          <button class="cnt-btn" onclick="decreaseCount('${task.id}')">−</button>
+          <div class="cnt-val">${task.count}</div>
+          <button class="cnt-btn" onclick="increaseCount('${task.id}')">+</button>
+        </div>
+        <div class="task-subtotal">${secsToFormatted(taskSecs)}</div>
+        <button class="btn btn-ghost btn-sm" onclick="removeTask('${task.id}')" style="padding:4px 8px;font-size:12px">✕</button>
+      `;
+      dayTaskList.appendChild(div);
+    });
+  }
+
+  updateTotals();
+  renderLastSession();
+  updateHeaderStats();
+}
+
+function updateTotals() {
+  const total = calcDayTotalSecs(currentDate);
+  const { h, m, s } = secsToHMS(total);
+  document.getElementById('totalH').textContent = pad(h);
+  document.getElementById('totalM').textContent = pad(m);
+  document.getElementById('totalS').textContent = pad(s);
+  document.getElementById('totalFormatted').textContent = secsToFormatted(total);
+}
+
+// ── TASK OPERATIONS ──
+window.increaseCount = function(taskId) {
+  const day = getDayData(currentDate);
+  const task = day.tasks.find(t => t.id === taskId);
+  if (task) { task.count++; saveData(); renderDayView(); }
+};
+
+window.decreaseCount = function(taskId) {
+  const day = getDayData(currentDate);
+  const task = day.tasks.find(t => t.id === taskId);
+  if (task && task.count > 0) { task.count--; saveData(); renderDayView(); }
+};
+
+window.removeTask = function(taskId) {
+  const day = getDayData(currentDate);
+  day.tasks = day.tasks.filter(t => t.id !== taskId);
+  if (day.tasks.length === 0) delete data.days[currentDate];
+  saveData();
+  renderDayView();
+};
+
+document.getElementById('addTaskBtn').addEventListener('click', () => {
+  const name = document.getElementById('newTaskName').value.trim();
+  const mins = Math.max(0, parseInt(document.getElementById('newTaskMins').value) || 0);
+  const secs = Math.max(0, Math.min(59, parseInt(document.getElementById('newTaskSecs').value) || 0));
+
+  if (!name) { document.getElementById('newTaskName').focus(); return; }
+  if (mins === 0 && secs === 0) { alert('Duration must be > 0'); return; }
+
+  const day = getDayData(currentDate);
+  day.tasks.push({ id: uid(), name, minutes: mins, seconds: secs, count: 1 });
+  saveData();
+  renderDayView();
+
+  document.getElementById('newTaskName').value = '';
+  document.getElementById('newTaskMins').value = '';
+  document.getElementById('newTaskSecs').value = '';
+  document.getElementById('newTaskName').focus();
+});
+
+// Enter key on task name
+document.getElementById('newTaskName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('addTaskBtn').click();
+});
+
+// ── LAST SESSION ──
+function renderLastSession() {
+  const dates = Object.keys(data.days).sort().reverse();
+  const lastDate = dates.find(d => d !== currentDate && calcDayTotalSecs(d) > 0);
+
+  if (!lastDate) {
+    document.getElementById('lsDate').textContent = 'No previous sessions';
+    document.getElementById('lsTime').textContent = '--:--:--';
+    document.getElementById('lsTasks').innerHTML = '';
+    return;
+  }
+
+  const dt = new Date(lastDate + 'T12:00:00');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('lsDate').textContent = `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
+  document.getElementById('lsTime').textContent = secsToFormatted(calcDayTotalSecs(lastDate));
+
+  const tasks = data.days[lastDate].tasks || [];
+  const lsTasksEl = document.getElementById('lsTasks');
+  lsTasksEl.innerHTML = '';
+  tasks.forEach(t => {
+    if (t.count > 0) {
+      const secs = (t.minutes * 60 + t.seconds) * t.count;
+      lsTasksEl.innerHTML += `<div class="ls-task"><span class="n">${escHtml(t.name)} ×${t.count}</span><span class="v">${secsToFormatted(secs)}</span></div>`;
+    }
+  });
+}
+
+// ── MONTHLY MINI SIDE ──
+function renderMonthlySide() {
+  const parts = currentDate.split('-');
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]); // 1-based
+  const today = todayStr();
+
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('msSideLabel').textContent = `${months[month-1]} ${year}`;
+
+  // Total for month
+  let monthTotal = 0;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const container = document.getElementById('msSideDays');
+  container.innerHTML = '';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${pad(month)}-${pad(d)}`;
+    const secs = calcDayTotalSecs(ds);
+    monthTotal += secs;
+    const cell = document.createElement('div');
+    cell.className = 'ms-day';
+    if (secs > 0) cell.classList.add('has-data');
+    if (ds === today) cell.classList.add('today');
+    if (ds === currentDate) cell.classList.add('current');
+    cell.textContent = d;
+    cell.title = secs > 0 ? secsToFormatted(secs) : 'No data';
+    cell.addEventListener('click', () => {
+      yearSelect.value = year;
+      monthSelect.value = month;
+      updateDayOptions();
+      daySelect.value = d;
+      updateDateFromSelects();
+    });
+    container.appendChild(cell);
+  }
+
+  document.getElementById('msSideTotal').textContent = secsToFormatted(monthTotal);
+}
+
+// ── HEADER STATS ──
+function updateHeaderStats() {
+  const today = todayStr();
+  const todayParts = today.split('-');
+  const curYear = parseInt(todayParts[0]);
+  const curMonth = parseInt(todayParts[1]);
+
+  let totalDays = 0, totalSecs = 0, monthSecs = 0;
+
+  Object.keys(data.days).forEach(dateStr => {
+    const secs = calcDayTotalSecs(dateStr);
+    if (secs > 0) {
+      totalDays++;
+      totalSecs += secs;
+      const parts = dateStr.split('-');
+      if (parseInt(parts[0]) === curYear && parseInt(parts[1]) === curMonth) {
+        monthSecs += secs;
+      }
+    }
+  });
+
+  document.getElementById('hdrDays').textContent = totalDays;
+  document.getElementById('hdrHrs').textContent = Math.floor(totalSecs / 3600);
+  document.getElementById('hdrMonth').textContent = secsToHM(monthSecs);
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const today = todayStr();
+  const todayParts = today.split('-');
+  const curYear = parseInt(todayParts[0]);
+  const curMonth = parseInt(todayParts[1]);
+
+  let totalDays = 0, totalSecs = 0, monthSecs = 0, weekSecs = 0;
+  let bestSecs = 0, bestDate = '';
+  const taskMap = {}; // name -> total secs
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  const weekAgoStr = `${weekAgo.getFullYear()}-${pad(weekAgo.getMonth()+1)}-${pad(weekAgo.getDate())}`;
+
+  Object.keys(data.days).forEach(dateStr => {
+    const secs = calcDayTotalSecs(dateStr);
+    if (secs === 0) return;
+    totalDays++;
+    totalSecs += secs;
+    if (secs > bestSecs) { bestSecs = secs; bestDate = dateStr; }
+
+    const parts = dateStr.split('-');
+    if (parseInt(parts[0]) === curYear && parseInt(parts[1]) === curMonth) monthSecs += secs;
+    if (dateStr >= weekAgoStr) weekSecs += secs;
+
+    const day = data.days[dateStr];
+    (day.tasks || []).forEach(t => {
+      if (!taskMap[t.name]) taskMap[t.name] = 0;
+      taskMap[t.name] += (t.minutes * 60 + t.seconds) * t.count;
+    });
+  });
+
+  document.getElementById('dbDays').textContent = totalDays;
+  document.getElementById('dbTotal').textContent = secsToHM(totalSecs);
+  document.getElementById('dbMonth').textContent = secsToHM(monthSecs);
+  const months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('dbMonthLabel').textContent = months2[curMonth-1] + ' ' + curYear;
+  document.getElementById('dbWeek').textContent = secsToHM(weekSecs);
+  document.getElementById('dbBest').textContent = secsToHM(bestSecs);
+  if (bestDate) {
+    const bd = new Date(bestDate + 'T12:00:00');
+    document.getElementById('dbBestDate').textContent = `${bd.getDate()} ${months2[bd.getMonth()]} ${bd.getFullYear()}`;
+  }
+  document.getElementById('dbAvg').textContent = totalDays > 0 ? secsToHM(Math.floor(totalSecs / totalDays)) : '0h 0m';
+
+  // Week bar chart
+  const chart = document.getElementById('weekChart');
+  chart.innerHTML = '';
+  const days7 = [];
+  const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days7.push({
+      dateStr: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+      label: dayNames[d.getDay()],
+      isToday: i === 0
+    });
+  }
+  const maxSecs = Math.max(1, ...days7.map(d => calcDayTotalSecs(d.dateStr)));
+  days7.forEach(({ dateStr, label, isToday }) => {
+    const secs = calcDayTotalSecs(dateStr);
+    const pct = Math.round((secs / maxSecs) * 100);
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    col.innerHTML = `
+      <div class="bar-val">${secs > 0 ? secsToFormatted(secs) : ''}</div>
+      <div class="bar${isToday ? ' today-bar' : ''}" style="height:${Math.max(pct,0)}%"></div>
+      <div class="bar-label">${label}</div>
+    `;
+    chart.appendChild(col);
+  });
+
+  // Breakdown
+  const bl = document.getElementById('breakdownList');
+  const entries = Object.entries(taskMap).sort((a,b) => b[1]-a[1]);
+  if (entries.length === 0) {
+    bl.innerHTML = '<div class="es-sub" style="padding:20px 0">No data yet.</div>';
+  } else {
+    const maxT = entries[0][1];
+    bl.innerHTML = '';
+    entries.forEach(([name, secs]) => {
+      const pct = Math.round((secs / maxT) * 100);
+      bl.innerHTML += `
+        <div class="breakdown-item">
+          <div class="bi-name">${escHtml(name)}</div>
+          <div class="bi-bar"><div class="bi-fill" style="width:${pct}%"></div></div>
+          <div class="bi-val">${secsToFormatted(secs)}</div>
+        </div>
+      `;
+    });
+  }
+}
+
+// ── MONTHLY VIEW ──
+function renderMonthlyView() {
+  const months = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  document.getElementById('monthLabel').textContent = `${months[calViewMonth]} ${calViewYear}`;
+
+  const today = todayStr();
+  const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+  let monthTotal = 0;
+
+  // Calendar
+  const calHeader = document.getElementById('calHeader');
+  calHeader.innerHTML = '<div></div>';
+  ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach(d => {
+    calHeader.innerHTML += `<div class="cal-head">${d}</div>`;
+  });
+
+  const calGrid = document.getElementById('calGrid');
+  calGrid.innerHTML = '';
+
+  const firstDay = new Date(calViewYear, calViewMonth, 1).getDay();
+  let week = [];
+
+  for (let i = 0; i < firstDay; i++) week.push(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    week.push(d);
+    if (week.length === 7) {
+      renderCalWeek(calGrid, week, calViewYear, calViewMonth, today);
+      week = [];
+    }
+  }
+  if (week.length > 0) {
+    while (week.length < 7) week.push(null);
+    renderCalWeek(calGrid, week, calViewYear, calViewMonth, today);
+  }
+
+  // Monthly detail rows
+  const monthlyRows = document.getElementById('monthlyRows');
+  monthlyRows.innerHTML = '';
+  const daySecsArr = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${calViewYear}-${pad(calViewMonth+1)}-${pad(d)}`;
+    const secs = calcDayTotalSecs(ds);
+    monthTotal += secs;
+    if (secs > 0) daySecsArr.push({ d, ds, secs });
+  }
+
+  const maxDaySecs = Math.max(1, ...daySecsArr.map(x => x.secs));
+
+  if (daySecsArr.length === 0) {
+    monthlyRows.innerHTML = '<div class="es-sub" style="padding:20px 0">No activity this month.</div>';
+  } else {
+    const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    daySecsArr.forEach(({ d, ds, secs }) => {
+      const dt = new Date(ds + 'T12:00:00');
+      const pct = Math.round((secs / maxDaySecs) * 100);
+      monthlyRows.innerHTML += `
+        <div class="monthly-row">
+          <div class="mr-day">${weekdays[dt.getDay()]} ${d}</div>
+          <div class="mr-time">${secsToFormatted(secs)}</div>
+          <div class="mr-bar"><div class="mr-bar-fill" style="width:${pct}%"></div></div>
+          <div class="mr-link" onclick="gotoDate('${ds}')">→ VIEW</div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById('monthTotalLabel').textContent = `TOTAL: ${secsToFormatted(monthTotal)}`;
+}
+
+function renderCalWeek(grid, week, year, month, today) {
+  const row = document.createElement('div');
+  row.className = 'cal-row';
+  row.innerHTML = '<div class="cal-week-label"></div>';
+  week.forEach(d => {
+    if (!d) {
+      row.innerHTML += '<div class="cal-cell empty"></div>';
+      return;
+    }
+    const ds = `${year}-${pad(month+1)}-${pad(d)}`;
+    const secs = calcDayTotalSecs(ds);
+    let level = '';
+    if (secs > 0) {
+      const h = secs / 3600;
+      if (h >= 6) level = 'has-data-4';
+      else if (h >= 4) level = 'has-data-3';
+      else if (h >= 2) level = 'has-data-2';
+      else level = 'has-data-1';
+    }
+    const isToday = ds === today ? ' today-cell' : '';
+    row.innerHTML += `<div class="cal-cell ${level}${isToday}" title="${secs > 0 ? secsToFormatted(secs) : 'No data'}" onclick="gotoDate('${ds}')">${d}</div>`;
+  });
+  grid.appendChild(row);
+}
+
+window.gotoDate = function(ds) {
+  const parts = ds.split('-');
+  yearSelect.value = parseInt(parts[0]);
+  monthSelect.value = parseInt(parts[1]);
+  updateDayOptions();
+  daySelect.value = parseInt(parts[2]);
+  updateDateFromSelects();
+  switchTab('log');
+};
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'monthly') renderMonthlyView();
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.view));
+});
+
+// ── EXPORT ──
+document.getElementById('exportCSV').addEventListener('click', () => {
+  let csv = 'Date,Task,Minutes,Seconds,Count,Total_HH:MM:SS\n';
+  Object.keys(data.days).sort().forEach(dateStr => {
+    const day = data.days[dateStr];
+    (day.tasks || []).forEach(t => {
+      const secs = (t.minutes * 60 + t.seconds) * t.count;
+      csv += `${dateStr},"${t.name}",${t.minutes},${t.seconds},${t.count},${secsToFormatted(secs)}\n`;
+    });
+  });
+  download('chronos-export.csv', 'text/csv', csv);
+});
+
+document.getElementById('exportJSON').addEventListener('click', () => {
+  download('chronos-export.json', 'application/json', JSON.stringify(data, null, 2));
+});
+
+function download(filename, type, content) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = filename;
+  a.click();
+}
+
+// ── CLEAR ALL ──
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (!confirm('Delete ALL data? This cannot be undone.')) return;
+  data = { days: {} };
+  saveData();
+  renderDayView();
+  updateHeaderStats();
+  renderMonthlySide();
+});
+
+// ── NAV BUTTONS ──
+document.getElementById('prevDay').addEventListener('click', () => navigateDay(-1));
+document.getElementById('nextDay').addEventListener('click', () => navigateDay(1));
+document.getElementById('todayBtn').addEventListener('click', () => {
+  const d = new Date();
+  yearSelect.value = d.getFullYear();
+  monthSelect.value = d.getMonth() + 1;
+  updateDayOptions();
+  daySelect.value = d.getDate();
+  updateDateFromSelects();
+});
+
+document.getElementById('prevMonth').addEventListener('click', () => {
+  calViewMonth--;
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  renderMonthlyView();
+});
+
+document.getElementById('nextMonth').addEventListener('click', () => {
+  calViewMonth++;
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  renderMonthlyView();
+});
+
+yearSelect.addEventListener('change', () => { updateDayOptions(); updateDateFromSelects(); });
+monthSelect.addEventListener('change', () => { updateDayOptions(); updateDateFromSelects(); });
+daySelect.addEventListener('change', updateDateFromSelects);
+
+// ── ONLINE STATUS ──
+const onlineDot = document.getElementById('onlineStatus');
+function updateOnline() {
+  onlineDot.textContent = navigator.onLine ? 'ONLINE' : 'OFFLINE';
+  onlineDot.style.color = navigator.onLine ? '' : 'var(--danger)';
+}
+window.addEventListener('online', updateOnline);
+window.addEventListener('offline', updateOnline);
+updateOnline();
+
+// Auto-save
+setInterval(saveData, 5000);
+window.addEventListener('beforeunload', saveData);
+
+// ── UTILS ──
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ──
+initSelectors();
+renderDayView();
+updateHeaderStats();
+renderMonthlySide();
+</script>
+</body>
+</html>
