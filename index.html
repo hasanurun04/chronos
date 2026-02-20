@@ -192,13 +192,26 @@
     /* ── DATE NAV ── */
     .date-nav {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      gap: 8px;
       margin-bottom: 20px;
       padding: 14px 20px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-left: 3px solid var(--accent);
+    }
+
+    .date-nav-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .date-nav-bottom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .date-nav select {
@@ -238,6 +251,7 @@
       color: var(--accent);
       letter-spacing: 2px;
       flex: 1;
+      text-align: center;
     }
 
     .today-btn {
@@ -368,6 +382,9 @@
       color: var(--accent3);
       letter-spacing: 4px;
       text-shadow: 0 0 15px rgba(0,255,170,0.4);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* ── TASK ENTRIES ── */
@@ -1020,23 +1037,106 @@
     ::-webkit-scrollbar-thumb { background: var(--border2); }
 
     /* ── RESPONSIVE ── */
+
+    /* Tablet */
     @media (max-width: 900px) {
       .main-grid { grid-template-columns: 1fr; }
       .sidebar { flex-direction: row; flex-wrap: wrap; }
-      .sidebar > * { flex: 1; min-width: 280px; }
+      .sidebar > * { flex: 1; min-width: 260px; }
       .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
-      .total-display { grid-template-columns: repeat(3, 1fr); }
     }
 
+    /* Mobile landscape / small tablet */
     @media (max-width: 700px) {
       .task-list { grid-template-columns: 1fr; }
+      .sidebar { flex-direction: column; }
+      .sidebar > * { min-width: unset; width: 100%; }
     }
 
-    @media (max-width: 600px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
+    /* Mobile */
+    @media (max-width: 540px) {
+      .app { padding: 10px; }
+
+      /* Header */
+      header { padding: 14px 16px; }
+      .header-left h1 { font-size: 16px; letter-spacing: 2px; }
+      .header-left .tagline { display: none; }
       .header-right { display: none; }
-      .total-display { grid-template-columns: repeat(3, 1fr); }
+
+      /* Tabs */
+      .tabs { gap: 0; overflow-x: auto; }
+      .tab { padding: 10px 14px; font-size: 9px; letter-spacing: 1px; white-space: nowrap; }
+
+      /* Date nav */
+      .date-nav { padding: 12px; gap: 8px; }
+      .date-nav-top { gap: 8px; }
+      .date-label { font-size: 12px; letter-spacing: 1px; }
+      .date-nav-bottom { gap: 6px; }
+      .date-nav-bottom select {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        padding: 8px 4px;
+      }
+      #prevDay, #nextDay { width: 38px; height: 38px; font-size: 18px; flex-shrink: 0; }
+      #todayBtn { padding: 8px 10px; font-size: 11px; }
+      #clearAllBtn { display: none; }
+
+      /* Total cells */
+      .total-display { gap: 6px; }
+      .total-cell { padding: 12px 6px; }
+      .total-cell .t-label { font-size: 8px; letter-spacing: 1px; }
+      .total-cell .t-value { font-size: 26px; }
+      .total-cell .t-unit { font-size: 8px; }
+
+      /* Total formatted — prevent overflow */
+      .total-formatted { padding: 12px; flex-direction: column; align-items: flex-start; gap: 4px; }
+      .total-formatted .tf-value { font-size: 18px; letter-spacing: 2px; }
+
+      /* Task entries */
+      .task-list { grid-template-columns: 1fr; gap: 6px; }
+      .task-entry { padding: 10px 12px; }
+      .task-name { font-size: 13px; }
+      .cnt-btn { width: 34px; height: 34px; font-size: 20px; }
+      .cnt-val { font-size: 15px; min-width: 30px; }
+      .task-subtotal { font-size: 12px; }
+
+      /* Add task row — stack */
+      .add-row { flex-wrap: wrap; gap: 6px; }
+      .add-row input[type="text"] { width: 100%; flex: none; }
+      .add-row input[type="number"] { width: 64px; font-size: 14px; padding: 8px; }
+      .add-row .add-label { font-size: 12px; }
+      #addTaskBtn { flex: 1; justify-content: center; }
+
+      /* Panel label */
+      .panel { padding: 16px 12px; }
+      .panel::before { font-size: 8px; }
+
+      /* Dashboard */
+      .dashboard-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .mc-value { font-size: 20px; }
+      .mc-label { font-size: 8px; }
+
+      /* Monthly */
+      .cal-cell { font-size: 8px; }
+      .monthly-row { grid-template-columns: 55px 72px 1fr auto; font-size: 10px; }
+      .monthly-row .mr-time { font-size: 9px; }
+
+      /* Sidebar panels */
+      .last-session, .month-summary-side, .goals-panel, .export-panel { padding: 14px 12px; }
+      .ls-time { font-size: 20px; }
+      .ms-total { font-size: 18px; }
+
+      /* Goals */
+      .goal-current { font-size: 14px; }
+    }
+
+    /* Very small phones */
+    @media (max-width: 380px) {
+      .header-left h1 { font-size: 14px; }
       .total-cell .t-value { font-size: 22px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .tab { padding: 10px 10px; font-size: 8px; }
     }
 
     /* ── ANIMATIONS ── */
@@ -1058,6 +1158,123 @@
     .corner-tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
     .corner-bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
     .corner-br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+    /* ── GOALS PANEL ── */
+    .goals-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      position: relative;
+    }
+
+    .goals-panel::before {
+      content: 'TARGETS';
+      position: absolute;
+      top: -1px; left: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: var(--danger);
+      padding: 2px 8px;
+    }
+
+    .goal-block {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .goal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .goal-label {
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .goal-numbers {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .goal-current {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .goal-current.on-track  { color: var(--accent3); text-shadow: 0 0 10px rgba(0,255,170,0.3); }
+    .goal-current.over      { color: var(--accent);  text-shadow: 0 0 10px rgba(0,212,255,0.3); }
+    .goal-current.behind    { color: var(--accent4); text-shadow: 0 0 10px rgba(255,107,53,0.3); }
+    .goal-current.critical  { color: var(--danger);  text-shadow: 0 0 10px rgba(255,34,68,0.3); }
+
+    .goal-target {
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .goal-edit-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0 2px;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: color 0.15s;
+    }
+    .goal-edit-btn:hover { color: var(--accent); }
+
+    .goal-track {
+      height: 6px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      transition: width 0.4s ease;
+      min-width: 0;
+    }
+
+    .goal-fill.on-track { background: linear-gradient(90deg, #00aa77, var(--accent3)); }
+    .goal-fill.over     { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+    .goal-fill.behind   { background: linear-gradient(90deg, #cc4400, var(--accent4)); }
+    .goal-fill.critical { background: linear-gradient(90deg, #aa0022, var(--danger)); }
+
+    .goal-remaining {
+      font-size: 10px;
+      color: var(--text3);
+      text-align: right;
+    }
+
+    .goal-remaining.done {
+      color: var(--accent3);
+    }
+
+    /* inline edit input */
+    .goal-input {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      width: 60px;
+      padding: 2px 6px;
+      background: var(--bg2);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      outline: none;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -1091,14 +1308,18 @@
   <!-- ══ VIEW: DAILY LOG ══ -->
   <div class="view active" id="view-log">
     <div class="date-nav">
-      <button class="nav-btn" id="prevDay">◀</button>
-      <button class="nav-btn" id="nextDay">▶</button>
-      <div class="date-label" id="dateLabel">SELECT DATE</div>
-      <select id="yearSelect"></select>
-      <select id="monthSelect"></select>
-      <select id="daySelect"></select>
-      <button class="today-btn" id="todayBtn">TODAY</button>
-      <button class="btn btn-ghost btn-sm" id="clearAllBtn">⚠ CLEAR ALL</button>
+      <div class="date-nav-top">
+        <button class="nav-btn" id="prevDay">◀</button>
+        <div class="date-label" id="dateLabel">SELECT DATE</div>
+        <button class="nav-btn" id="nextDay">▶</button>
+      </div>
+      <div class="date-nav-bottom">
+        <select id="yearSelect"></select>
+        <select id="monthSelect"></select>
+        <select id="daySelect"></select>
+        <button class="today-btn" id="todayBtn">TODAY</button>
+        <button class="btn btn-ghost btn-sm" id="clearAllBtn">⚠ CLEAR ALL</button>
+      </div>
     </div>
 
     <div class="main-grid">
@@ -1171,6 +1392,43 @@
           <div class="ms-label" style="margin-top:6px" id="msSideLabel">THIS MONTH</div>
           <div class="ms-total" id="msSideTotal">00:00:00</div>
           <div class="ms-days" id="msSideDays"></div>
+        </div>
+
+        <!-- Goals / Targets -->
+        <div class="goals-panel" id="goalsPanel">
+          <div style="height:6px"></div>
+
+          <!-- Weekly -->
+          <div class="goal-block" id="weekGoalBlock">
+            <div class="goal-header">
+              <span class="goal-label">This Week</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="goal-numbers">
+                  <span class="goal-current" id="weekGoalCurrent">0h</span>
+                  <span class="goal-target" id="weekGoalTarget">/ 20h</span>
+                </div>
+                <button class="goal-edit-btn" id="weekGoalEditBtn" title="Edit target">✎</button>
+              </div>
+            </div>
+            <div class="goal-track"><div class="goal-fill" id="weekGoalFill"></div></div>
+            <div class="goal-remaining" id="weekGoalRemaining"></div>
+          </div>
+
+          <!-- Monthly -->
+          <div class="goal-block" id="monthGoalBlock">
+            <div class="goal-header">
+              <span class="goal-label">This Month</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="goal-numbers">
+                  <span class="goal-current" id="monthGoalCurrent">0h</span>
+                  <span class="goal-target" id="monthGoalTarget">/ 80h</span>
+                </div>
+                <button class="goal-edit-btn" id="monthGoalEditBtn" title="Edit target">✎</button>
+              </div>
+            </div>
+            <div class="goal-track"><div class="goal-fill" id="monthGoalFill"></div></div>
+            <div class="goal-remaining" id="monthGoalRemaining"></div>
+          </div>
         </div>
 
         <!-- Export -->
@@ -1459,6 +1717,7 @@ function renderDayView() {
   updateTotals();
   renderLastSession();
   updateHeaderStats();
+  renderGoals();
 }
 
 function updateTotals() {
@@ -2088,11 +2347,162 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── GOALS ──
+const DEFAULT_GOALS = { weekly: 20, monthly: 80 };
+
+function loadGoals() {
+  try {
+    const raw = localStorage.getItem('chronos_goals');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { ...DEFAULT_GOALS };
+}
+
+function saveGoals() {
+  localStorage.setItem('chronos_goals', JSON.stringify(goals));
+}
+
+let goals = loadGoals();
+
+function getWeekSecs() {
+  const today = new Date();
+  // Start of week = last Monday (or today if Monday)
+  const day = today.getDay(); // 0=Sun
+  const diffToMon = (day === 0) ? -6 : 1 - day;
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + diffToMon + i);
+    weekDates.push(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`);
+  }
+  return weekDates.reduce((sum, ds) => sum + calcDayTotalSecs(ds), 0);
+}
+
+function getMonthSecs() {
+  const today = new Date();
+  const year = today.getFullYear(), month = today.getMonth() + 1;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let total = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    total += calcDayTotalSecs(`${year}-${pad(month)}-${pad(d)}`);
+  }
+  return total;
+}
+
+function statusClass(pct) {
+  if (pct >= 100) return 'over';
+  if (pct >= 66)  return 'on-track';
+  if (pct >= 33)  return 'behind';
+  return 'critical';
+}
+
+function renderGoals() {
+  const weekSecs  = getWeekSecs();
+  const monthSecs = getMonthSecs();
+
+  const weekTargetSecs  = goals.weekly  * 3600;
+  const monthTargetSecs = goals.monthly * 3600;
+
+  const weekPct  = Math.min(Math.round((weekSecs  / weekTargetSecs)  * 100), 100);
+  const monthPct = Math.min(Math.round((monthSecs / monthTargetSecs) * 100), 100);
+
+  const weekH  = (weekSecs  / 3600).toFixed(1);
+  const monthH = (monthSecs / 3600).toFixed(1);
+
+  const weekStatus  = statusClass(weekPct);
+  const monthStatus = statusClass(monthPct);
+
+  // Week
+  document.getElementById('weekGoalCurrent').textContent = weekH + 'h';
+  document.getElementById('weekGoalCurrent').className   = 'goal-current ' + weekStatus;
+  document.getElementById('weekGoalTarget').textContent  = '/ ' + goals.weekly + 'h';
+  document.getElementById('weekGoalFill').style.width    = weekPct + '%';
+  document.getElementById('weekGoalFill').className      = 'goal-fill ' + weekStatus;
+  const weekLeft = Math.max(0, weekTargetSecs - weekSecs);
+  const weekLeftH = (weekLeft / 3600).toFixed(1);
+  const weekRemEl = document.getElementById('weekGoalRemaining');
+  if (weekSecs >= weekTargetSecs) {
+    weekRemEl.textContent = '✓ TARGET MET  +' + ((weekSecs - weekTargetSecs)/3600).toFixed(1) + 'h extra';
+    weekRemEl.className = 'goal-remaining done';
+  } else {
+    weekRemEl.textContent = weekLeftH + 'h remaining  ·  ' + weekPct + '%';
+    weekRemEl.className = 'goal-remaining';
+  }
+
+  // Month
+  document.getElementById('monthGoalCurrent').textContent = monthH + 'h';
+  document.getElementById('monthGoalCurrent').className   = 'goal-current ' + monthStatus;
+  document.getElementById('monthGoalTarget').textContent  = '/ ' + goals.monthly + 'h';
+  document.getElementById('monthGoalFill').style.width    = monthPct + '%';
+  document.getElementById('monthGoalFill').className      = 'goal-fill ' + monthStatus;
+  const monthLeft = Math.max(0, monthTargetSecs - monthSecs);
+  const monthLeftH = (monthLeft / 3600).toFixed(1);
+  const monthRemEl = document.getElementById('monthGoalRemaining');
+  if (monthSecs >= monthTargetSecs) {
+    monthRemEl.textContent = '✓ TARGET MET  +' + ((monthSecs - monthTargetSecs)/3600).toFixed(1) + 'h extra';
+    monthRemEl.className = 'goal-remaining done';
+  } else {
+    monthRemEl.textContent = monthLeftH + 'h remaining  ·  ' + monthPct + '%';
+    monthRemEl.className = 'goal-remaining';
+  }
+}
+
+function makeGoalEditable(btnId, numbersId, targetId, key, currentId) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    const header = document.getElementById(btnId).closest('.goal-header');
+    const numsEl = header.querySelector('.goal-numbers');
+    const oldVal = goals[key];
+
+    numsEl.innerHTML = `
+      <input class="goal-input" id="gi_${key}" type="number" value="${oldVal}" min="1" max="9999" />
+      <span style="font-size:10px;color:var(--text3)">h</span>
+      <button class="goal-edit-btn" id="gi_${key}_ok" style="color:var(--accent3)">✓</button>
+      <button class="goal-edit-btn" id="gi_${key}_x"  style="color:var(--text3)">✕</button>
+    `;
+
+    const inp = document.getElementById(`gi_${key}`);
+    inp.focus(); inp.select();
+
+    const commit = () => {
+      const v = Math.max(1, parseInt(inp.value) || oldVal);
+      goals[key] = v;
+      saveGoals();
+      renderGoals();
+    };
+
+    const cancel = () => renderGoals();
+
+    document.getElementById(`gi_${key}_ok`).addEventListener('click', commit);
+    document.getElementById(`gi_${key}_x`).addEventListener('click', cancel);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') commit();
+      if (e.key === 'Escape') cancel();
+    });
+  });
+}
+
+makeGoalEditable('weekGoalEditBtn',  'weekGoalNumbers',  'weekGoalTarget',  'weekly',  'weekGoalCurrent');
+makeGoalEditable('monthGoalEditBtn', 'monthGoalNumbers', 'monthGoalTarget', 'monthly', 'monthGoalCurrent');
+
 // ── INIT ──
 initSelectors();
 renderDayView();
 updateHeaderStats();
 renderMonthlySide();
+renderGoals();
 </script>
+
+<footer style="text-align:center;padding:24px 16px;margin-top:40px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;line-height:2">
+  <a href="https://github.com/hasanurun04/chronos" style="color:var(--text2);text-decoration:none" target="_blank">Chronos</a>
+  © 2025 by
+  <a href="https://www.linkedin.com/in/bayramhasanurun/" style="color:var(--text2);text-decoration:none" target="_blank">Hasan Urun</a>
+  is licensed under
+  <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" style="color:var(--text2);text-decoration:none" target="_blank">CC BY-NC-ND 4.0</a>
+  <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width:1em;max-height:1em;margin-left:.2em;vertical-align:middle;opacity:0.5">
+  <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width:1em;max-height:1em;margin-left:.2em;vertical-align:middle;opacity:0.5">
+  <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="" style="max-width:1em;max-height:1em;margin-left:.2em;vertical-align:middle;opacity:0.5">
+  <img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="" style="max-width:1em;max-height:1em;margin-left:.2em;vertical-align:middle;opacity:0.5">
+</footer>
+
 </body>
 </html>
