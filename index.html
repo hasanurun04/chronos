@@ -395,11 +395,10 @@
     }
 
     .task-entry {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
-      gap: 6px 10px;
-      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px;
       background: var(--bg2);
       border: 1px solid var(--border);
       border-left: 2px solid transparent;
@@ -416,22 +415,17 @@
       border-left-color: var(--accent3);
     }
 
-    .task-info {
-      min-width: 0;
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    .task-remove {
-      grid-column: 2;
-      grid-row: 1;
+    .task-top-row {
       display: flex;
       align-items: flex-start;
-      justify-content: flex-end;
+      justify-content: space-between;
+      gap: 8px;
     }
 
+    .task-info { min-width: 0; flex: 1; }
+
     .task-name {
-      font-size: 12px;
+      font-size: 15px;
       color: var(--text);
       font-weight: 600;
       white-space: nowrap;
@@ -440,62 +434,79 @@
     }
 
     .task-meta {
-      font-size: 10px;
+      font-size: 12px;
       color: var(--text3);
-      margin-top: 2px;
+      margin-top: 4px;
     }
 
-    .task-bottom {
-      grid-column: 1 / -1;
-      grid-row: 2;
+    .task-middle-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .task-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .task-subtotal {
       font-family: 'Orbitron', monospace;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--accent3);
+      text-align: center;
     }
 
     .count-ctrl {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 0;
       user-select: none;
+      background: var(--panel2);
+      border: 1px solid var(--border2);
     }
 
     .cnt-btn {
-      width: 28px; height: 28px;
-      background: var(--panel2);
-      border: 1px solid var(--border2);
+      width: 44px; height: 44px;
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--border2);
       color: var(--accent);
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 400;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       font-family: 'IBM Plex Mono', monospace;
       transition: all 0.15s;
-      line-height: 1;
       padding: 0;
       padding-bottom: 2px;
+      flex-shrink: 0;
+    }
+
+    .cnt-btn:last-child {
+      border-right: none;
+      border-left: 1px solid var(--border2);
     }
 
     .cnt-btn:hover {
       background: var(--accent);
       color: var(--bg);
-      box-shadow: 0 0 12px var(--glow);
+    }
+
+    .cnt-btn:active {
+      transform: scale(0.93);
     }
 
     .cnt-val {
       font-family: 'Orbitron', monospace;
-      font-size: 14px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--accent);
-      min-width: 26px;
+      min-width: 52px;
       text-align: center;
+      padding: 0 8px;
     }
 
     /* ── ADD TASK ── */
@@ -1095,11 +1106,11 @@
 
       /* Task entries */
       .task-list { grid-template-columns: 1fr; gap: 6px; }
-      .task-entry { padding: 10px 12px; }
+      .task-entry { padding: 12px; }
       .task-name { font-size: 13px; }
-      .cnt-btn { width: 34px; height: 34px; font-size: 20px; }
-      .cnt-val { font-size: 15px; min-width: 30px; }
-      .task-subtotal { font-size: 12px; }
+      .cnt-btn { width: 50px; height: 50px; font-size: 26px; }
+      .cnt-val { font-size: 18px; min-width: 56px; }
+      .task-subtotal { font-size: 13px; }
 
       /* Add task row — stack */
       .add-row { flex-wrap: wrap; gap: 6px; }
@@ -1154,12 +1165,119 @@
       border-style: solid;
     }
 
+    /* ── FAVORITES ── */
+    .favorites-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .fav-header {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .fav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--warn);
+      transition: all 0.15s;
+    }
+
+    .fav-item:hover {
+      background: rgba(255,170,0,0.05);
+      border-color: var(--warn);
+    }
+
+    .fav-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .fav-name {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fav-meta {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .fav-add-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      background: var(--warn);
+      color: var(--bg);
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .fav-add-btn:hover {
+      background: #ffcc44;
+    }
+
+    .fav-del-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .fav-del-btn:hover { color: var(--danger); }
+
+    .fav-empty {
+      font-size: 11px;
+      color: var(--text3);
+      padding: 8px 0;
+    }
+
+    /* Star button on task card */
+    .task-star-btn {
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 2px 4px;
+      color: var(--text3);
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .task-star-btn:hover { color: var(--warn); }
+    .task-star-btn.starred { color: var(--warn); }
+
     .corner-tl { top: 0; left: 0; border-width: 1px 0 0 1px; }
     .corner-tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
     .corner-bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
     .corner-br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
-
-    /* ── GOALS PANEL ── */
     .goals-panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -1372,6 +1490,14 @@
               <input type="number" id="newTaskSecs" placeholder="0" min="0" max="59" step="1" title="Seconds" />
               <span class="add-label">sec</span>
               <button class="btn btn-primary btn-sm" id="addTaskBtn">+ ADD</button>
+            </div>
+          </div>
+
+          <!-- Favorites -->
+          <div class="favorites-section">
+            <div class="fav-header">★ FAVORITES — QUICK ADD</div>
+            <div class="fav-list" id="favList">
+              <div class="fav-empty" id="favEmpty">No favorites yet. Star a task to save it here.</div>
             </div>
           </div>
         </div>
@@ -1693,20 +1819,26 @@ function renderDayView() {
       const taskSecs = (task.minutes * 60 + task.seconds) * task.count;
       const div = document.createElement('div');
       div.className = 'task-entry' + (task.count > 0 ? ' has-count' : '');
+      const isStarred = isFavorite(task.name, task.minutes, task.seconds);
       div.innerHTML = `
-        <div class="task-info">
-          <div class="task-name">${escHtml(task.name)}</div>
-          <div class="task-meta">${task.minutes}m ${task.seconds}s / unit</div>
+        <div class="task-top-row">
+          <div class="task-info">
+            <div class="task-name">${escHtml(task.name)}</div>
+            <div class="task-meta">${task.minutes}m ${task.seconds}s / unit</div>
+          </div>
+          <div style="display:flex;gap:2px;align-items:center;flex-shrink:0">
+            <button class="task-star-btn${isStarred ? ' starred' : ''}" onclick="toggleFavorite('${task.id}')" title="${isStarred ? 'Remove from favorites' : 'Add to favorites'}">★</button>
+            <button class="btn btn-ghost btn-sm" onclick="removeTask('${task.id}')" style="padding:2px 7px;font-size:11px;border-color:var(--border)">✕</button>
+          </div>
         </div>
-        <div class="task-remove">
-          <button class="btn btn-ghost btn-sm" onclick="removeTask('${task.id}')" style="padding:2px 7px;font-size:11px;border-color:var(--border)">✕</button>
-        </div>
-        <div class="task-bottom">
+        <div class="task-middle-row">
           <div class="count-ctrl">
             <button class="cnt-btn" onclick="decreaseCount('${task.id}')">−</button>
             <div class="cnt-val">${task.count}</div>
             <button class="cnt-btn" onclick="increaseCount('${task.id}')">+</button>
           </div>
+        </div>
+        <div class="task-bottom-row">
           <div class="task-subtotal">${secsToFormatted(taskSecs)}</div>
         </div>
       `;
@@ -1749,6 +1881,92 @@ window.removeTask = function(taskId) {
   saveData();
   renderDayView();
 };
+
+// ── FAVORITES ──
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem('chronos_favorites');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return [];
+}
+
+function saveFavorites() {
+  localStorage.setItem('chronos_favorites', JSON.stringify(favorites));
+}
+
+let favorites = loadFavorites();
+// favorites = [ { id, name, minutes, seconds }, ... ]
+
+function isFavorite(name, minutes, seconds) {
+  return favorites.some(f => f.name === name && f.minutes === minutes && f.seconds === seconds);
+}
+
+window.toggleFavorite = function(taskId) {
+  const day = getDayData(currentDate);
+  const task = day.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const idx = favorites.findIndex(f => f.name === task.name && f.minutes === task.minutes && f.seconds === task.seconds);
+  if (idx >= 0) {
+    favorites.splice(idx, 1);
+  } else {
+    favorites.push({ id: uid(), name: task.name, minutes: task.minutes, seconds: task.seconds });
+  }
+  saveFavorites();
+  renderDayView();
+  renderFavorites();
+};
+
+window.addFavoriteToDay = function(favId) {
+  const fav = favorites.find(f => f.id === favId);
+  if (!fav) return;
+
+  const day = getDayData(currentDate);
+  // If same task already exists today, just bump count
+  const existing = day.tasks.find(t => t.name === fav.name && t.minutes === fav.minutes && t.seconds === fav.seconds);
+  if (existing) {
+    existing.count++;
+  } else {
+    day.tasks.push({ id: uid(), name: fav.name, minutes: fav.minutes, seconds: fav.seconds, count: 1 });
+  }
+  saveData();
+  renderDayView();
+};
+
+window.removeFavorite = function(favId) {
+  favorites = favorites.filter(f => f.id !== favId);
+  saveFavorites();
+  renderFavorites();
+  renderDayView(); // refresh star states
+};
+
+function renderFavorites() {
+  const list = document.getElementById('favList');
+  const empty = document.getElementById('favEmpty');
+  // Remove old fav items (keep empty placeholder)
+  list.querySelectorAll('.fav-item').forEach(el => el.remove());
+
+  if (favorites.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  favorites.forEach(fav => {
+    const div = document.createElement('div');
+    div.className = 'fav-item';
+    div.innerHTML = `
+      <div class="fav-info">
+        <div class="fav-name">${escHtml(fav.name)}</div>
+        <div class="fav-meta">${fav.minutes}m ${fav.seconds}s / unit</div>
+      </div>
+      <button class="fav-add-btn" onclick="addFavoriteToDay('${fav.id}')">+ ADD</button>
+      <button class="fav-del-btn" onclick="removeFavorite('${fav.id}')" title="Remove favorite">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
 
 document.getElementById('addTaskBtn').addEventListener('click', () => {
   const name = document.getElementById('newTaskName').value.trim();
@@ -2490,6 +2708,7 @@ renderDayView();
 updateHeaderStats();
 renderMonthlySide();
 renderGoals();
+renderFavorites();
 </script>
 
 <footer style="text-align:center;padding:24px 16px;margin-top:40px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;line-height:2">
