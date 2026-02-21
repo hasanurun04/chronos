@@ -274,7 +274,7 @@
     /* ── MAIN GRID ── */
     .main-grid {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 340px 1fr;
       gap: 16px;
     }
 
@@ -1441,69 +1441,7 @@
     </div>
 
     <div class="main-grid">
-      <!-- LEFT: Day tasks -->
-      <div>
-        <div class="panel" data-label="TODAY'S TASKS">
-          <div style="height:12px"></div>
-
-          <!-- Totals -->
-          <div class="total-display">
-            <div class="total-cell">
-              <div class="t-label">Hours</div>
-              <div class="t-value" id="totalH">00</div>
-              <div class="t-unit">HRS</div>
-            </div>
-            <div class="total-cell">
-              <div class="t-label">Minutes</div>
-              <div class="t-value" id="totalM">00</div>
-              <div class="t-unit">MIN</div>
-            </div>
-            <div class="total-cell">
-              <div class="t-label">Seconds</div>
-              <div class="t-value" id="totalS">00</div>
-              <div class="t-unit">SEC</div>
-            </div>
-          </div>
-
-          <div class="total-formatted">
-            <div class="tf-label">TOTAL SESSION TIME</div>
-            <div class="tf-value" id="totalFormatted">00:00:00</div>
-          </div>
-
-          <!-- Task list for this day -->
-          <div id="dayTaskList" class="task-list"></div>
-
-          <!-- Empty state -->
-          <div id="dayEmptyState" class="empty-state" style="display:none">
-            <div class="es-icon">⬡</div>
-            <div class="es-title">NO TASKS YET</div>
-            <div class="es-sub">Add tasks below to start logging</div>
-          </div>
-
-          <!-- Add task for THIS DAY -->
-          <div class="add-task-section">
-            <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px">ADD TASK TO THIS DAY</div>
-            <div class="add-row">
-              <input type="text" id="newTaskName" placeholder="Task name..." />
-              <input type="number" id="newTaskMins" placeholder="0" min="0" step="1" title="Minutes" />
-              <span class="add-label">min</span>
-              <input type="number" id="newTaskSecs" placeholder="0" min="0" max="59" step="1" title="Seconds" />
-              <span class="add-label">sec</span>
-              <button class="btn btn-primary btn-sm" id="addTaskBtn">+ ADD</button>
-            </div>
-          </div>
-
-          <!-- Favorites -->
-          <div class="favorites-section">
-            <div class="fav-header">★ FAVORITES — QUICK ADD</div>
-            <div class="fav-list" id="favList">
-              <div class="fav-empty" id="favEmpty">No favorites yet. Star a task to save it here.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: Sidebar -->
+      <!-- LEFT: Sidebar -->
       <div class="sidebar">
 
         <!-- Last session -->
@@ -1570,6 +1508,70 @@
             <input type="file" id="importJSONFile" accept=".json" style="display:none" />
           </div>
         </div>
+      </div>
+
+      <!-- RIGHT: Day tasks -->
+      <div>
+        <div class="panel" data-label="TODAY'S TASKS">
+          <div style="height:12px"></div>
+
+          <!-- Totals -->
+          <div class="total-display">
+            <div class="total-cell">
+              <div class="t-label">Hours</div>
+              <div class="t-value" id="totalH">00</div>
+              <div class="t-unit">HRS</div>
+            </div>
+            <div class="total-cell">
+              <div class="t-label">Minutes</div>
+              <div class="t-value" id="totalM">00</div>
+              <div class="t-unit">MIN</div>
+            </div>
+            <div class="total-cell">
+              <div class="t-label">Seconds</div>
+              <div class="t-value" id="totalS">00</div>
+              <div class="t-unit">SEC</div>
+            </div>
+          </div>
+
+          <div class="total-formatted">
+            <div class="tf-label">TOTAL SESSION TIME</div>
+            <div class="tf-value" id="totalFormatted">00:00:00</div>
+          </div>
+
+          <!-- Task list for this day -->
+          <div id="dayTaskList" class="task-list"></div>
+
+          <!-- Empty state -->
+          <div id="dayEmptyState" class="empty-state" style="display:none">
+            <div class="es-icon">⬡</div>
+            <div class="es-title">NO TASKS YET</div>
+            <div class="es-sub">Add tasks below to start logging</div>
+          </div>
+
+          <!-- Add task for THIS DAY -->
+          <div class="add-task-section">
+            <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px">ADD TASK TO THIS DAY</div>
+            <div class="add-row">
+              <input type="text" id="newTaskName" placeholder="Task name..." />
+              <input type="number" id="newTaskMins" placeholder="0" min="0" step="1" title="Minutes" />
+              <span class="add-label">min</span>
+              <input type="number" id="newTaskSecs" placeholder="0" min="0" max="59" step="1" title="Seconds" />
+              <span class="add-label">sec</span>
+              <button class="btn btn-primary btn-sm" id="addTaskBtn">+ ADD</button>
+            </div>
+          </div>
+
+          <!-- Favorites -->
+          <div class="favorites-section">
+            <div class="fav-header">★ FAVORITES — QUICK ADD</div>
+            <div class="fav-list" id="favList">
+              <div class="fav-empty" id="favEmpty">No favorites yet. Star a task to save it here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       </div>
     </div>
   </div>
