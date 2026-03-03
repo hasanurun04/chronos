@@ -37,7 +37,6 @@
       overflow-x: hidden;
     }
 
-    /* Scanline overlay */
     body::before {
       content: '';
       position: fixed;
@@ -53,7 +52,6 @@
       z-index: 9999;
     }
 
-    /* Animated corner grid bg */
     body::after {
       content: '';
       position: fixed;
@@ -388,10 +386,32 @@
     }
 
     /* ── TASK ENTRIES ── */
+    /* Smart layout: 1 task = 1 col, 2+ = 2 col */
     .task-list {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+    }
+    .task-list.single-task {
+      grid-template-columns: 1fr;
+    }
+    .task-list.single-task .task-entry {
+      max-width: 100%;
+    }
+    .task-list.single-task .cnt-btn {
+      width: 56px;
+      height: 56px;
+      font-size: 28px;
+    }
+    .task-list.single-task .cnt-val {
+      font-size: 24px;
+      min-width: 70px;
+    }
+    .task-list.single-task .task-name {
+      font-size: 17px;
+    }
+    .task-list.single-task .task-subtotal {
+      font-size: 15px;
     }
 
     .task-entry {
@@ -1048,8 +1068,6 @@
     ::-webkit-scrollbar-thumb { background: var(--border2); }
 
     /* ── RESPONSIVE ── */
-
-    /* Tablet */
     @media (max-width: 900px) {
       .main-grid { grid-template-columns: 1fr; }
       .sidebar { flex-direction: row; flex-wrap: wrap; }
@@ -1057,92 +1075,60 @@
       .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
-    /* Mobile landscape / small tablet */
     @media (max-width: 700px) {
       .task-list { grid-template-columns: 1fr; }
       .sidebar { flex-direction: column; }
       .sidebar > * { min-width: unset; width: 100%; }
     }
 
-    /* Mobile */
     @media (max-width: 540px) {
       .app { padding: 10px; }
-
-      /* Header */
       header { padding: 14px 16px; }
       .header-left h1 { font-size: 16px; letter-spacing: 2px; }
       .header-left .tagline { display: none; }
       .header-right { display: none; }
-
-      /* Tabs */
       .tabs { gap: 0; overflow-x: auto; }
       .tab { padding: 10px 14px; font-size: 9px; letter-spacing: 1px; white-space: nowrap; }
-
-      /* Date nav */
       .date-nav { padding: 12px; gap: 8px; }
       .date-nav-top { gap: 8px; }
       .date-label { font-size: 12px; letter-spacing: 1px; }
       .date-nav-bottom { gap: 6px; }
-      .date-nav-bottom select {
-        flex: 1;
-        min-width: 0;
-        font-size: 13px;
-        padding: 8px 4px;
-      }
+      .date-nav-bottom select { flex: 1; min-width: 0; font-size: 13px; padding: 8px 4px; }
       #prevDay, #nextDay { width: 38px; height: 38px; font-size: 18px; flex-shrink: 0; }
       #todayBtn { padding: 8px 10px; font-size: 11px; }
       #clearAllBtn { display: none; }
-
-      /* Total cells */
       .total-display { gap: 6px; }
       .total-cell { padding: 12px 6px; }
       .total-cell .t-label { font-size: 8px; letter-spacing: 1px; }
       .total-cell .t-value { font-size: 26px; }
       .total-cell .t-unit { font-size: 8px; }
-
-      /* Total formatted — prevent overflow */
       .total-formatted { padding: 12px; flex-direction: column; align-items: flex-start; gap: 4px; }
       .total-formatted .tf-value { font-size: 18px; letter-spacing: 2px; }
-
-      /* Task entries */
       .task-list { grid-template-columns: 1fr; gap: 6px; }
       .task-entry { padding: 12px; }
       .task-name { font-size: 13px; }
       .cnt-btn { width: 50px; height: 50px; font-size: 26px; }
       .cnt-val { font-size: 18px; min-width: 56px; }
       .task-subtotal { font-size: 13px; }
-
-      /* Add task row — stack */
       .add-row { flex-wrap: wrap; gap: 6px; }
       .add-row input[type="text"] { width: 100%; flex: none; }
       .add-row input[type="number"] { width: 64px; font-size: 14px; padding: 8px; }
       .add-row .add-label { font-size: 12px; }
       #addTaskBtn { flex: 1; justify-content: center; }
-
-      /* Panel label */
       .panel { padding: 16px 12px; }
       .panel::before { font-size: 8px; }
-
-      /* Dashboard */
       .dashboard-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       .mc-value { font-size: 20px; }
       .mc-label { font-size: 8px; }
-
-      /* Monthly */
       .cal-cell { font-size: 8px; }
       .monthly-row { grid-template-columns: 55px 72px 1fr auto; font-size: 10px; }
       .monthly-row .mr-time { font-size: 9px; }
-
-      /* Sidebar panels */
       .last-session, .month-summary-side, .goals-panel, .export-panel { padding: 14px 12px; }
       .ls-time { font-size: 20px; }
       .ms-total { font-size: 18px; }
-
-      /* Goals */
       .goal-current { font-size: 14px; }
     }
 
-    /* Very small phones */
     @media (max-width: 380px) {
       .header-left h1 { font-size: 14px; }
       .total-cell .t-value { font-size: 22px; }
@@ -1202,10 +1188,7 @@
       border-color: var(--warn);
     }
 
-    .fav-info {
-      flex: 1;
-      min-width: 0;
-    }
+    .fav-info { flex: 1; min-width: 0; }
 
     .fav-name {
       font-size: 13px;
@@ -1216,11 +1199,7 @@
       text-overflow: ellipsis;
     }
 
-    .fav-meta {
-      font-size: 10px;
-      color: var(--text3);
-      margin-top: 2px;
-    }
+    .fav-meta { font-size: 10px; color: var(--text3); margin-top: 2px; }
 
     .fav-add-btn {
       font-family: 'IBM Plex Mono', monospace;
@@ -1236,9 +1215,7 @@
       flex-shrink: 0;
     }
 
-    .fav-add-btn:hover {
-      background: #ffcc44;
-    }
+    .fav-add-btn:hover { background: #ffcc44; }
 
     .fav-del-btn {
       background: none;
@@ -1252,14 +1229,8 @@
     }
 
     .fav-del-btn:hover { color: var(--danger); }
+    .fav-empty { font-size: 11px; color: var(--text3); padding: 8px 0; }
 
-    .fav-empty {
-      font-size: 11px;
-      color: var(--text3);
-      padding: 8px 0;
-    }
-
-    /* Star button on task card */
     .task-star-btn {
       background: none;
       border: none;
@@ -1278,6 +1249,8 @@
     .corner-tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
     .corner-bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
     .corner-br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+    /* ── GOALS PANEL ── */
     .goals-panel {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -1310,18 +1283,9 @@
       justify-content: space-between;
     }
 
-    .goal-label {
-      font-size: 10px;
-      color: var(--text3);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
+    .goal-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
 
-    .goal-numbers {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-    }
+    .goal-numbers { display: flex; align-items: baseline; gap: 4px; }
 
     .goal-current {
       font-family: 'Orbitron', monospace;
@@ -1335,10 +1299,7 @@
     .goal-current.behind    { color: var(--accent4); text-shadow: 0 0 10px rgba(255,107,53,0.3); }
     .goal-current.critical  { color: var(--danger);  text-shadow: 0 0 10px rgba(255,34,68,0.3); }
 
-    .goal-target {
-      font-size: 10px;
-      color: var(--text3);
-    }
+    .goal-target { font-size: 10px; color: var(--text3); }
 
     .goal-edit-btn {
       background: none;
@@ -1371,17 +1332,9 @@
     .goal-fill.behind   { background: linear-gradient(90deg, #cc4400, var(--accent4)); }
     .goal-fill.critical { background: linear-gradient(90deg, #aa0022, var(--danger)); }
 
-    .goal-remaining {
-      font-size: 10px;
-      color: var(--text3);
-      text-align: right;
-    }
+    .goal-remaining { font-size: 10px; color: var(--text3); text-align: right; }
+    .goal-remaining.done { color: var(--accent3); }
 
-    .goal-remaining.done {
-      color: var(--accent3);
-    }
-
-    /* inline edit input */
     .goal-input {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 12px;
@@ -1392,6 +1345,276 @@
       color: var(--accent);
       outline: none;
       text-align: center;
+    }
+
+    /* ── OVERTIME WARNING ── */
+    .overtime-warning {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255, 34, 68, 0.08);
+      border: 1px solid rgba(255, 34, 68, 0.35);
+      border-left: 3px solid var(--danger);
+      margin-top: 10px;
+      animation: pulseWarn 2.5s ease-in-out infinite;
+    }
+
+    .overtime-warning.visible { display: flex; }
+
+    @keyframes pulseWarn {
+      0%, 100% { border-left-color: var(--danger); background: rgba(255,34,68,0.08); }
+      50% { border-left-color: #ff6688; background: rgba(255,34,68,0.14); }
+    }
+
+    .ow-icon { font-size: 13px; flex-shrink: 0; }
+
+    .ow-text {
+      font-size: 10px;
+      color: var(--danger);
+      letter-spacing: 0.5px;
+      line-height: 1.4;
+    }
+
+    .ow-text strong {
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      display: block;
+      letter-spacing: 1px;
+      margin-bottom: 1px;
+    }
+
+    /* ── EARNINGS PANEL ── */
+    .earnings-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      position: relative;
+    }
+
+    .earnings-panel::before {
+      content: 'EARNINGS';
+      position: absolute;
+      top: -1px; left: 16px;
+      font-family: 'Orbitron', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--bg);
+      background: #9b59b6;
+      padding: 2px 8px;
+    }
+
+    .earnings-rate-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+
+    .earnings-rate-label {
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .earnings-rate-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      color: #c39bd3;
+      font-weight: 700;
+    }
+
+    .earnings-edit-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0 2px;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: color 0.15s;
+    }
+    .earnings-edit-btn:hover { color: #c39bd3; }
+
+    .earnings-input {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      width: 70px;
+      padding: 2px 6px;
+      background: var(--bg2);
+      border: 1px solid #9b59b6;
+      color: #c39bd3;
+      outline: none;
+      text-align: center;
+    }
+
+    .earnings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .earn-cell {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-top: 2px solid #9b59b6;
+      padding: 10px 12px;
+      position: relative;
+    }
+
+    .earn-cell.tl-cell {
+      border-top-color: #e67e22;
+    }
+
+    .earn-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .earn-eur {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #c39bd3;
+      text-shadow: 0 0 10px rgba(155,89,182,0.4);
+      line-height: 1;
+    }
+
+    .earn-tl {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #e67e22;
+      text-shadow: 0 0 10px rgba(230,126,34,0.4);
+      line-height: 1;
+    }
+
+    .earn-sub {
+      font-size: 9px;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+
+    .earn-divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2px 0;
+    }
+
+    .exchange-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0 2px;
+    }
+
+    .exchange-rate-label {
+      font-size: 10px;
+      color: var(--text3);
+      flex: 1;
+    }
+
+    .exchange-rate-val {
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      color: #e67e22;
+    }
+
+    .exchange-rate-val.loading { color: var(--text3); font-size: 10px; font-family: 'IBM Plex Mono', monospace; }
+    .exchange-rate-val.error { color: var(--danger); font-size: 10px; font-family: 'IBM Plex Mono', monospace; }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 3px 7px;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+
+    .refresh-btn:hover {
+      border-color: #e67e22;
+      color: #e67e22;
+    }
+
+    .refresh-btn.spinning {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .task-entry.dragging {
+      opacity: 0.4;
+      border-left-color: var(--accent) !important;
+      background: rgba(0, 212, 255, 0.08) !important;
+    }
+    .task-entry.drag-over {
+      border-top: 2px solid var(--accent);
+    }
+
+    /* ── UNDO TOAST ── */
+    #undoToast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--panel2);
+      border: 1px solid var(--border2);
+      border-left: 3px solid var(--accent4);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 12px;
+      color: var(--text2);
+      z-index: 10000;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+
+    #undoToast.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .undo-name {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .undo-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      background: var(--accent4);
+      color: var(--bg);
+      border: none;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.15s;
+    }
+
+    .undo-btn:hover { background: #ff8c55; }
+
+    .undo-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px;
+      background: var(--accent4);
+      transition: width linear;
     }
   </style>
 </head>
@@ -1444,25 +1667,15 @@
       <!-- LEFT: Sidebar -->
       <div class="sidebar">
 
-        <!-- Last session -->
         <div class="last-session" id="lastSessionPanel">
           <div class="ls-date" id="lsDate">—</div>
           <div class="ls-time" id="lsTime">--:--:--</div>
           <div class="ls-tasks" id="lsTasks"></div>
         </div>
 
-        <!-- Monthly mini -->
-        <div class="month-summary-side">
-          <div class="ms-label" style="margin-top:6px" id="msSideLabel">THIS MONTH</div>
-          <div class="ms-total" id="msSideTotal">00:00:00</div>
-          <div class="ms-days" id="msSideDays"></div>
-        </div>
-
-        <!-- Goals / Targets -->
         <div class="goals-panel" id="goalsPanel">
           <div style="height:6px"></div>
 
-          <!-- Weekly -->
           <div class="goal-block" id="weekGoalBlock">
             <div class="goal-header">
               <span class="goal-label">This Week</span>
@@ -1478,7 +1691,6 @@
             <div class="goal-remaining" id="weekGoalRemaining"></div>
           </div>
 
-          <!-- Monthly -->
           <div class="goal-block" id="monthGoalBlock">
             <div class="goal-header">
               <span class="goal-label">This Month</span>
@@ -1493,9 +1705,72 @@
             <div class="goal-track"><div class="goal-fill" id="monthGoalFill"></div></div>
             <div class="goal-remaining" id="monthGoalRemaining"></div>
           </div>
+
+          <div class="overtime-warning" id="overtimeWarning">
+            <span class="ow-icon">⚠</span>
+            <div class="ow-text">
+              <strong id="owTitle">OVERTIME</strong>
+              <span id="owMsg">You have exceeded your target.</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Export -->
+        <div class="earnings-panel">
+          <div style="height:6px"></div>
+
+          <div class="earnings-rate-row">
+            <span class="earnings-rate-label">HOURLY RATE</span>
+            <span class="earnings-rate-val" id="earningsRateDisplay">€6.80</span>
+            <button class="earnings-edit-btn" id="earningsEditBtn" title="Edit rate">✎</button>
+          </div>
+
+          <div class="earnings-grid">
+            <div class="earn-cell">
+              <div class="earn-label">Today · EUR</div>
+              <div class="earn-eur" id="earnTodayEur">€0.00</div>
+              <div class="earn-sub" id="earnTodayEurSub">0h logged</div>
+            </div>
+            <div class="earn-cell tl-cell">
+              <div class="earn-label">Today · TRY</div>
+              <div class="earn-tl" id="earnTodayTry">₺—</div>
+              <div class="earn-sub">at current rate</div>
+            </div>
+            <div class="earn-cell">
+              <div class="earn-label">This Week · EUR</div>
+              <div class="earn-eur" id="earnWeekEur">€0.00</div>
+              <div class="earn-sub" id="earnWeekEurSub">0h this week</div>
+            </div>
+            <div class="earn-cell tl-cell">
+              <div class="earn-label">This Week · TRY</div>
+              <div class="earn-tl" id="earnWeekTry">₺—</div>
+              <div class="earn-sub">at current rate</div>
+            </div>
+            <div class="earn-cell">
+              <div class="earn-label">This Month · EUR</div>
+              <div class="earn-eur" id="earnMonthEur">€0.00</div>
+              <div class="earn-sub" id="earnMonthEurSub">0h this month</div>
+            </div>
+            <div class="earn-cell tl-cell">
+              <div class="earn-label">This Month · TRY</div>
+              <div class="earn-tl" id="earnMonthTry">₺—</div>
+              <div class="earn-sub">at current rate</div>
+            </div>
+          </div>
+
+          <div class="exchange-row">
+            <span class="exchange-rate-label">EUR/TRY</span>
+            <span class="exchange-rate-val loading" id="exchangeRateVal">—</span>
+            <button class="refresh-btn" id="refreshRateBtn" title="Refresh exchange rate">↻</button>
+          </div>
+          <div style="font-size:9px;color:var(--text3);margin-top:4px" id="exchangeRateTime"></div>
+        </div>
+
+        <div class="month-summary-side">
+          <div class="ms-label" style="margin-top:6px" id="msSideLabel">THIS MONTH</div>
+          <div class="ms-total" id="msSideTotal">00:00:00</div>
+          <div class="ms-days" id="msSideDays"></div>
+        </div>
+
         <div class="export-panel">
           <div style="height:6px"></div>
           <div style="font-size:10px;color:var(--text3);margin-bottom:10px">Export your timesheet data</div>
@@ -1515,7 +1790,6 @@
         <div class="panel" data-label="TODAY'S TASKS">
           <div style="height:12px"></div>
 
-          <!-- Totals -->
           <div class="total-display">
             <div class="total-cell">
               <div class="t-label">Hours</div>
@@ -1539,17 +1813,14 @@
             <div class="tf-value" id="totalFormatted">00:00:00</div>
           </div>
 
-          <!-- Task list for this day -->
           <div id="dayTaskList" class="task-list"></div>
 
-          <!-- Empty state -->
           <div id="dayEmptyState" class="empty-state" style="display:none">
             <div class="es-icon">⬡</div>
             <div class="es-title">NO TASKS YET</div>
             <div class="es-sub">Add tasks below to start logging</div>
           </div>
 
-          <!-- Add task for THIS DAY -->
           <div class="add-task-section">
             <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:10px">ADD TASK TO THIS DAY</div>
             <div class="add-row">
@@ -1562,7 +1833,6 @@
             </div>
           </div>
 
-          <!-- Favorites -->
           <div class="favorites-section">
             <div class="fav-header">★ FAVORITES — QUICK ADD</div>
             <div class="fav-list" id="favList">
@@ -1570,8 +1840,6 @@
             </div>
           </div>
         </div>
-      </div>
-
       </div>
     </div>
   </div>
@@ -1647,25 +1915,22 @@
 
 </div>
 
+<!-- UNDO TOAST -->
+<div id="undoToast">
+  <span>Task <span class="undo-name" id="undoTaskName"></span> removed</span>
+  <button class="undo-btn" id="undoBtnEl">UNDO</button>
+  <div class="undo-progress" id="undoProgress"></div>
+</div>
+
 <script>
 const STORAGE_KEY = 'chronos_v1';
 let data = loadData();
-
-// ── DATA STRUCTURE ──
-// data = {
-//   days: {
-//     "2024-01-15": {
-//       tasks: [ { id, name, minutes, seconds, count } ]
-//     }
-//   }
-// }
 
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const d = JSON.parse(raw);
-      // Migrate old format
       if (d.taskTypes) return migrateLegacy(d);
       return d;
     }
@@ -1725,7 +1990,6 @@ function secsToHM(totalSecs) {
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
-
 function uid() { return 't' + Date.now() + Math.random().toString(36).slice(2, 6); }
 
 function todayStr() {
@@ -1733,12 +1997,10 @@ function todayStr() {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 }
 
-// ── CURRENT DATE STATE ──
 let currentDate = todayStr();
 let calViewYear = new Date().getFullYear();
-let calViewMonth = new Date().getMonth(); // 0-based
+let calViewMonth = new Date().getMonth();
 
-// ── DOM ──
 const yearSelect = document.getElementById('yearSelect');
 const monthSelect = document.getElementById('monthSelect');
 const daySelect = document.getElementById('daySelect');
@@ -1746,7 +2008,6 @@ const dateLabel = document.getElementById('dateLabel');
 const dayTaskList = document.getElementById('dayTaskList');
 const dayEmptyState = document.getElementById('dayEmptyState');
 
-// ── INIT DATE SELECTORS ──
 function initSelectors() {
   const cur = new Date();
   const curYear = cur.getFullYear();
@@ -1813,6 +2074,13 @@ function renderDayView() {
 
   dayTaskList.innerHTML = '';
 
+  // Smart layout
+  if (tasks.length === 1) {
+    dayTaskList.classList.add('single-task');
+  } else {
+    dayTaskList.classList.remove('single-task');
+  }
+
   if (tasks.length === 0) {
     dayEmptyState.style.display = 'block';
   } else {
@@ -1830,7 +2098,7 @@ function renderDayView() {
           </div>
           <div style="display:flex;gap:2px;align-items:center;flex-shrink:0">
             <button class="task-star-btn${isStarred ? ' starred' : ''}" onclick="toggleFavorite('${task.id}')" title="${isStarred ? 'Remove from favorites' : 'Add to favorites'}">★</button>
-            <button class="btn btn-ghost btn-sm" onclick="removeTask('${task.id}')" style="padding:2px 7px;font-size:11px;border-color:var(--border)">✕</button>
+            <button class="btn btn-ghost btn-sm" onclick="removeTask('${task.id}', '${escHtml(task.name).replace(/'/g,"\\'")}', ${task.minutes}, ${task.seconds}, ${task.count})" style="padding:2px 7px;font-size:11px;border-color:var(--border)">✕</button>
           </div>
         </div>
         <div class="task-middle-row">
@@ -1844,6 +2112,37 @@ function renderDayView() {
           <div class="task-subtotal">${secsToFormatted(taskSecs)}</div>
         </div>
       `;
+      div.draggable = true;
+      div.dataset.taskId = task.id;
+      div.addEventListener('dragstart', e => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', task.id);
+        div.classList.add('dragging');
+      });
+      div.addEventListener('dragend', () => {
+        div.classList.remove('dragging');
+        document.querySelectorAll('.task-entry').forEach(el => el.classList.remove('drag-over'));
+      });
+      div.addEventListener('dragover', e => {
+        e.preventDefault();
+        document.querySelectorAll('.task-entry').forEach(el => el.classList.remove('drag-over'));
+        div.classList.add('drag-over');
+      });
+      div.addEventListener('drop', e => {
+        e.preventDefault();
+        div.classList.remove('drag-over');
+        const fromId = e.dataTransfer.getData('text/plain');
+        const toId = task.id;
+        if (fromId === toId) return;
+        const day = getDayData(currentDate);
+        const fromIdx = day.tasks.findIndex(t => t.id === fromId);
+        const toIdx = day.tasks.findIndex(t => t.id === toId);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = day.tasks.splice(fromIdx, 1);
+        day.tasks.splice(toIdx, 0, moved);
+        saveData();
+        renderDayView();
+      });
       dayTaskList.appendChild(div);
     });
   }
@@ -1852,11 +2151,13 @@ function renderDayView() {
   renderLastSession();
   updateHeaderStats();
   renderGoals();
+  renderEarnings();
 }
 
 function updateTotals() {
   const total = calcDayTotalSecs(currentDate);
   const { h, m, s } = secsToHMS(total);
+  document.title = total > 0 ? `CHRONOS - ${secsToFormatted(total)}` : 'CHRONOS';
   document.getElementById('totalH').textContent = pad(h);
   document.getElementById('totalM').textContent = pad(m);
   document.getElementById('totalS').textContent = pad(s);
@@ -1876,13 +2177,77 @@ window.decreaseCount = function(taskId) {
   if (task && task.count > 0) { task.count--; saveData(); renderDayView(); }
 };
 
-window.removeTask = function(taskId) {
+// ── UNDO SYSTEM ──
+let undoState = null;
+let undoTimer = null;
+let undoProgressTimer = null;
+
+window.removeTask = function(taskId, taskName, taskMins, taskSecs, taskCount) {
   const day = getDayData(currentDate);
+  const task = day.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  // Save for undo
+  undoState = {
+    dateStr: currentDate,
+    task: { ...task },
+    index: day.tasks.indexOf(task)
+  };
+
   day.tasks = day.tasks.filter(t => t.id !== taskId);
   if (day.tasks.length === 0) delete data.days[currentDate];
   saveData();
   renderDayView();
+  showUndoToast(task.name);
 };
+
+function showUndoToast(name) {
+  const toast = document.getElementById('undoToast');
+  const nameEl = document.getElementById('undoTaskName');
+  const progress = document.getElementById('undoProgress');
+
+  nameEl.textContent = name.length > 22 ? name.slice(0, 20) + '…' : name;
+
+  // Clear existing timers
+  if (undoTimer) clearTimeout(undoTimer);
+  if (undoProgressTimer) clearInterval(undoProgressTimer);
+
+  toast.classList.add('visible');
+  progress.style.transition = 'none';
+  progress.style.width = '100%';
+
+  // Animate progress bar over 5s
+  let elapsed = 0;
+  const DURATION = 5000;
+  const INTERVAL = 50;
+  setTimeout(() => {
+    progress.style.transition = `width ${DURATION}ms linear`;
+    progress.style.width = '0%';
+  }, 30);
+
+  undoTimer = setTimeout(() => {
+    hideUndoToast();
+    undoState = null;
+  }, DURATION);
+}
+
+function hideUndoToast() {
+  document.getElementById('undoToast').classList.remove('visible');
+}
+
+document.getElementById('undoBtnEl').addEventListener('click', () => {
+  if (!undoState) return;
+  if (undoTimer) clearTimeout(undoTimer);
+
+  const day = getDayData(undoState.dateStr);
+  // Re-insert at original index
+  const idx = Math.min(undoState.index, day.tasks.length);
+  day.tasks.splice(idx, 0, undoState.task);
+  saveData();
+  undoState = null;
+  hideUndoToast();
+  renderDayView();
+});
 
 // ── FAVORITES ──
 function loadFavorites() {
@@ -1898,7 +2263,6 @@ function saveFavorites() {
 }
 
 let favorites = loadFavorites();
-// favorites = [ { id, name, minutes, seconds }, ... ]
 
 function isFavorite(name, minutes, seconds) {
   return favorites.some(f => f.name === name && f.minutes === minutes && f.seconds === seconds);
@@ -1925,7 +2289,6 @@ window.addFavoriteToDay = function(favId) {
   if (!fav) return;
 
   const day = getDayData(currentDate);
-  // If same task already exists today, just bump count
   const existing = day.tasks.find(t => t.name === fav.name && t.minutes === fav.minutes && t.seconds === fav.seconds);
   if (existing) {
     existing.count++;
@@ -1940,13 +2303,12 @@ window.removeFavorite = function(favId) {
   favorites = favorites.filter(f => f.id !== favId);
   saveFavorites();
   renderFavorites();
-  renderDayView(); // refresh star states
+  renderDayView();
 };
 
 function renderFavorites() {
   const list = document.getElementById('favList');
   const empty = document.getElementById('favEmpty');
-  // Remove old fav items (keep empty placeholder)
   list.querySelectorAll('.fav-item').forEach(el => el.remove());
 
   if (favorites.length === 0) {
@@ -1989,7 +2351,6 @@ document.getElementById('addTaskBtn').addEventListener('click', () => {
   document.getElementById('newTaskName').focus();
 });
 
-// Enter key on task name
 document.getElementById('newTaskName').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('addTaskBtn').click();
 });
@@ -2026,13 +2387,12 @@ function renderLastSession() {
 function renderMonthlySide() {
   const parts = currentDate.split('-');
   const year = parseInt(parts[0]);
-  const month = parseInt(parts[1]); // 1-based
+  const month = parseInt(parts[1]);
   const today = todayStr();
 
   const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   document.getElementById('msSideLabel').textContent = `${months[month-1]} ${year}`;
 
-  // Total for month
   let monthTotal = 0;
   const daysInMonth = new Date(year, month, 0).getDate();
   const container = document.getElementById('msSideDays');
@@ -2088,6 +2448,308 @@ function updateHeaderStats() {
   document.getElementById('hdrMonth').textContent = secsToHM(monthSecs);
 }
 
+// ── GOALS ──
+const DEFAULT_GOALS = { weekly: 20, monthly: 80 };
+
+function loadGoals() {
+  try {
+    const raw = localStorage.getItem('chronos_goals');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { ...DEFAULT_GOALS };
+}
+
+function saveGoals() {
+  localStorage.setItem('chronos_goals', JSON.stringify(goals));
+}
+
+let goals = loadGoals();
+
+function getWeekSecs() {
+  const today = new Date();
+  const day = today.getDay();
+  const diffToMon = (day === 0) ? -6 : 1 - day;
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + diffToMon + i);
+    weekDates.push(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`);
+  }
+  return weekDates.reduce((sum, ds) => sum + calcDayTotalSecs(ds), 0);
+}
+
+function getMonthSecs() {
+  const today = new Date();
+  const year = today.getFullYear(), month = today.getMonth() + 1;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let total = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    total += calcDayTotalSecs(`${year}-${pad(month)}-${pad(d)}`);
+  }
+  return total;
+}
+
+function statusClass(pct) {
+  if (pct >= 100) return 'over';
+  if (pct >= 66)  return 'on-track';
+  if (pct >= 33)  return 'behind';
+  return 'critical';
+}
+
+function renderGoals() {
+  const weekSecs  = getWeekSecs();
+  const monthSecs = getMonthSecs();
+
+  const weekTargetSecs  = goals.weekly  * 3600;
+  const monthTargetSecs = goals.monthly * 3600;
+
+  const weekPct  = Math.round((weekSecs  / weekTargetSecs)  * 100);
+  const monthPct = Math.round((monthSecs / monthTargetSecs) * 100);
+
+  const weekH  = (weekSecs  / 3600).toFixed(1);
+  const monthH = (monthSecs / 3600).toFixed(1);
+
+  const weekStatus  = statusClass(Math.min(weekPct, 100));
+  const monthStatus = statusClass(Math.min(monthPct, 100));
+
+  document.getElementById('weekGoalCurrent').textContent = weekH + 'h';
+  document.getElementById('weekGoalCurrent').className   = 'goal-current ' + weekStatus;
+  document.getElementById('weekGoalTarget').textContent  = '/ ' + goals.weekly + 'h';
+  document.getElementById('weekGoalFill').style.width    = Math.min(weekPct, 100) + '%';
+  document.getElementById('weekGoalFill').className      = 'goal-fill ' + weekStatus;
+  const weekLeft = Math.max(0, weekTargetSecs - weekSecs);
+  const weekLeftH = (weekLeft / 3600).toFixed(1);
+  const weekRemEl = document.getElementById('weekGoalRemaining');
+  if (weekSecs >= weekTargetSecs) {
+    weekRemEl.textContent = '✓ TARGET MET  +' + ((weekSecs - weekTargetSecs)/3600).toFixed(1) + 'h extra';
+    weekRemEl.className = 'goal-remaining done';
+  } else {
+    weekRemEl.textContent = weekLeftH + 'h remaining  ·  ' + weekPct + '%';
+    weekRemEl.className = 'goal-remaining';
+  }
+
+  document.getElementById('monthGoalCurrent').textContent = monthH + 'h';
+  document.getElementById('monthGoalCurrent').className   = 'goal-current ' + monthStatus;
+  document.getElementById('monthGoalTarget').textContent  = '/ ' + goals.monthly + 'h';
+  document.getElementById('monthGoalFill').style.width    = Math.min(monthPct, 100) + '%';
+  document.getElementById('monthGoalFill').className      = 'goal-fill ' + monthStatus;
+  const monthLeft = Math.max(0, monthTargetSecs - monthSecs);
+  const monthLeftH = (monthLeft / 3600).toFixed(1);
+  const monthRemEl = document.getElementById('monthGoalRemaining');
+  if (monthSecs >= monthTargetSecs) {
+    monthRemEl.textContent = '✓ TARGET MET  +' + ((monthSecs - monthTargetSecs)/3600).toFixed(1) + 'h extra';
+    monthRemEl.className = 'goal-remaining done';
+  } else {
+    monthRemEl.textContent = monthLeftH + 'h remaining  ·  ' + monthPct + '%';
+    monthRemEl.className = 'goal-remaining';
+  }
+
+  // Overtime warning
+  const owEl = document.getElementById('overtimeWarning');
+  const owTitle = document.getElementById('owTitle');
+  const owMsg = document.getElementById('owMsg');
+
+  if (weekPct > 100 && monthPct > 100) {
+    owEl.classList.add('visible');
+    owTitle.textContent = 'WEEKLY & MONTHLY OVERTIME';
+    const wExtra = ((weekSecs - weekTargetSecs)/3600).toFixed(1);
+    const mExtra = ((monthSecs - monthTargetSecs)/3600).toFixed(1);
+    owMsg.textContent = `+${wExtra}h this week, +${mExtra}h this month`;
+  } else if (weekPct > 100) {
+    owEl.classList.add('visible');
+    owTitle.textContent = 'WEEKLY OVERTIME';
+    const extra = ((weekSecs - weekTargetSecs)/3600).toFixed(1);
+    owMsg.textContent = `+${extra}h over your weekly target`;
+  } else if (monthPct > 100) {
+    owEl.classList.add('visible');
+    owTitle.textContent = 'MONTHLY OVERTIME';
+    const extra = ((monthSecs - monthTargetSecs)/3600).toFixed(1);
+    owMsg.textContent = `+${extra}h over your monthly target`;
+  } else {
+    owEl.classList.remove('visible');
+  }
+}
+
+function makeGoalEditable(btnId, numbersId, targetId, key, currentId) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    const header = document.getElementById(btnId).closest('.goal-header');
+    const numsEl = header.querySelector('.goal-numbers');
+    const oldVal = goals[key];
+
+    numsEl.innerHTML = `
+      <input class="goal-input" id="gi_${key}" type="number" value="${oldVal}" min="1" max="9999" />
+      <span style="font-size:10px;color:var(--text3)">h</span>
+      <button class="goal-edit-btn" id="gi_${key}_ok" style="color:var(--accent3)">✓</button>
+      <button class="goal-edit-btn" id="gi_${key}_x"  style="color:var(--text3)">✕</button>
+    `;
+
+    const inp = document.getElementById(`gi_${key}`);
+    inp.focus(); inp.select();
+
+    const commit = () => {
+      const v = Math.max(1, parseInt(inp.value) || oldVal);
+      goals[key] = v;
+      saveGoals();
+      renderGoals();
+    };
+
+    const cancel = () => renderGoals();
+
+    document.getElementById(`gi_${key}_ok`).addEventListener('click', commit);
+    document.getElementById(`gi_${key}_x`).addEventListener('click', cancel);
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') commit();
+      if (e.key === 'Escape') cancel();
+    });
+  });
+}
+
+makeGoalEditable('weekGoalEditBtn',  'weekGoalNumbers',  'weekGoalTarget',  'weekly',  'weekGoalCurrent');
+makeGoalEditable('monthGoalEditBtn', 'monthGoalNumbers', 'monthGoalTarget', 'monthly', 'monthGoalCurrent');
+
+// ── EARNINGS ──
+function loadEarnings() {
+  try {
+    const raw = localStorage.getItem('chronos_earnings');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { hourlyRate: 6.80 };
+}
+
+function saveEarnings() {
+  localStorage.setItem('chronos_earnings', JSON.stringify(earningsConfig));
+}
+
+let earningsConfig = loadEarnings();
+let eurTryRate = null;
+let eurTryFetchedAt = null;
+
+function formatEur(val) {
+  return '€' + val.toFixed(2);
+}
+
+function formatTry(eurVal) {
+  if (!eurTryRate) return '₺—';
+  const tryVal = eurVal * eurTryRate;
+  if (tryVal >= 1000) {
+    return '₺' + tryVal.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+  return '₺' + tryVal.toFixed(2);
+}
+
+function renderEarnings() {
+  const rate = earningsConfig.hourlyRate;
+  document.getElementById('earningsRateDisplay').textContent = '€' + rate.toFixed(2) + '/hr';
+
+  // Today
+  const todaySecs = calcDayTotalSecs(currentDate);
+  const todayEur = (todaySecs / 3600) * rate;
+  document.getElementById('earnTodayEur').textContent = formatEur(todayEur);
+  document.getElementById('earnTodayEurSub').textContent = (todaySecs/3600).toFixed(2) + 'h logged';
+  document.getElementById('earnTodayTry').textContent = formatTry(todayEur);
+
+  // Week
+  const weekSecs = getWeekSecs();
+  const weekEur = (weekSecs / 3600) * rate;
+  document.getElementById('earnWeekEur').textContent = formatEur(weekEur);
+  document.getElementById('earnWeekEurSub').textContent = (weekSecs/3600).toFixed(2) + 'h this week';
+  document.getElementById('earnWeekTry').textContent = formatTry(weekEur);
+
+  // Month
+  const monthSecs = getMonthSecs();
+  const monthEur = (monthSecs / 3600) * rate;
+  document.getElementById('earnMonthEur').textContent = formatEur(monthEur);
+  document.getElementById('earnMonthEurSub').textContent = (monthSecs/3600).toFixed(2) + 'h this month';
+  document.getElementById('earnMonthTry').textContent = formatTry(monthEur);
+}
+
+// Earnings rate edit
+document.getElementById('earningsEditBtn').addEventListener('click', () => {
+  const rateRow = document.getElementById('earningsEditBtn').closest('.earnings-rate-row');
+  const displayEl = document.getElementById('earningsRateDisplay');
+  const editBtn = document.getElementById('earningsEditBtn');
+  const oldRate = earningsConfig.hourlyRate;
+
+  displayEl.style.display = 'none';
+  editBtn.style.display = 'none';
+
+  const inp = document.createElement('input');
+  inp.className = 'earnings-input';
+  inp.type = 'number';
+  inp.value = oldRate;
+  inp.min = '0';
+  inp.step = '0.01';
+
+  const okBtn = document.createElement('button');
+  okBtn.className = 'earnings-edit-btn';
+  okBtn.textContent = '✓';
+  okBtn.style.color = 'var(--accent3)';
+
+  const xBtn = document.createElement('button');
+  xBtn.className = 'earnings-edit-btn';
+  xBtn.textContent = '✕';
+
+  rateRow.appendChild(inp);
+  rateRow.appendChild(okBtn);
+  rateRow.appendChild(xBtn);
+  inp.focus(); inp.select();
+
+  const commit = () => {
+    const v = Math.max(0, parseFloat(inp.value) || oldRate);
+    earningsConfig.hourlyRate = v;
+    saveEarnings();
+    inp.remove(); okBtn.remove(); xBtn.remove();
+    displayEl.style.display = '';
+    editBtn.style.display = '';
+    renderEarnings();
+  };
+
+  const cancel = () => {
+    inp.remove(); okBtn.remove(); xBtn.remove();
+    displayEl.style.display = '';
+    editBtn.style.display = '';
+  };
+
+  okBtn.addEventListener('click', commit);
+  xBtn.addEventListener('click', cancel);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') commit();
+    if (e.key === 'Escape') cancel();
+  });
+});
+
+// Exchange rate fetch
+async function fetchEurTry() {
+  const btn = document.getElementById('refreshRateBtn');
+  const valEl = document.getElementById('exchangeRateVal');
+  const timeEl = document.getElementById('exchangeRateTime');
+
+  btn.classList.add('spinning');
+  valEl.className = 'exchange-rate-val loading';
+  valEl.textContent = 'fetching…';
+
+  try {
+    // Use a free, no-auth exchange rate API
+    const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json');
+    const json = await res.json();
+    eurTryRate = json.eur.try;
+    eurTryFetchedAt = new Date();
+
+    valEl.className = 'exchange-rate-val';
+    valEl.textContent = eurTryRate.toFixed(4);
+    timeEl.textContent = 'Updated: ' + eurTryFetchedAt.toLocaleTimeString('tr-TR');
+    renderEarnings();
+  } catch(e) {
+    valEl.className = 'exchange-rate-val error';
+    valEl.textContent = 'fetch failed';
+    timeEl.textContent = 'Check connection';
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+document.getElementById('refreshRateBtn').addEventListener('click', fetchEurTry);
+
 // ── DASHBOARD ──
 function renderDashboard() {
   const today = todayStr();
@@ -2097,7 +2759,7 @@ function renderDashboard() {
 
   let totalDays = 0, totalSecs = 0, monthSecs = 0, weekSecs = 0;
   let bestSecs = 0, bestDate = '';
-  const taskMap = {}; // name -> total secs
+  const taskMap = {};
 
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 6);
@@ -2134,7 +2796,6 @@ function renderDashboard() {
   }
   document.getElementById('dbAvg').textContent = totalDays > 0 ? secsToHM(Math.floor(totalSecs / totalDays)) : '0h 0m';
 
-  // Week bar chart
   const chart = document.getElementById('weekChart');
   chart.innerHTML = '';
   const days7 = [];
@@ -2162,7 +2823,6 @@ function renderDashboard() {
     chart.appendChild(col);
   });
 
-  // Breakdown
   const bl = document.getElementById('breakdownList');
   const entries = Object.entries(taskMap).sort((a,b) => b[1]-a[1]);
   if (entries.length === 0) {
@@ -2192,7 +2852,6 @@ function renderMonthlyView() {
   const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
   let monthTotal = 0;
 
-  // Calendar
   const calHeader = document.getElementById('calHeader');
   calHeader.innerHTML = '<div></div>';
   ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach(d => {
@@ -2218,7 +2877,6 @@ function renderMonthlyView() {
     renderCalWeek(calGrid, week, calViewYear, calViewMonth, today);
   }
 
-  // Monthly detail rows
   const monthlyRows = document.getElementById('monthlyRows');
   monthlyRows.innerHTML = '';
   const daySecsArr = [];
@@ -2316,7 +2974,6 @@ document.getElementById('exportJSON').addEventListener('click', () => {
   download('chronos-export.json', 'application/json', JSON.stringify(data, null, 2));
 });
 
-// ── IMPORT JSON ──
 document.getElementById('importJSONBtn').addEventListener('click', () => {
   document.getElementById('importJSONFile').click();
 });
@@ -2328,7 +2985,6 @@ document.getElementById('importJSONFile').addEventListener('change', (e) => {
   reader.onload = (ev) => {
     try {
       const imported = JSON.parse(ev.target.result);
-      // Validate basic structure
       if (typeof imported !== 'object' || !imported.days) {
         alert('Invalid file: missing days data.');
         return;
@@ -2339,12 +2995,10 @@ document.getElementById('importJSONFile').addEventListener('change', (e) => {
         `You have ${existing} existing day(s).\n\nClick OK to MERGE (keep both), Cancel to REPLACE all data.`
       );
       if (merge) {
-        // Merge: incoming days overwrite existing same-day entries
         Object.assign(data.days, imported.days);
       } else {
         data = { days: imported.days };
       }
-      // Handle legacy format inside imported file
       if (imported.taskTypes) {
         const migrated = migrateLegacy(imported);
         Object.assign(data.days, migrated.days);
@@ -2362,11 +3016,9 @@ document.getElementById('importJSONFile').addEventListener('change', (e) => {
   reader.readAsText(file);
 });
 
-// ── PNG REPORT EXPORT ──
 document.getElementById('exportPNG').addEventListener('click', () => exportPNG());
 
 function exportPNG() {
-  // Build an offscreen canvas with a report of the current month
   const canvas = document.createElement('canvas');
   const W = 900, ROW = 44, HEADER = 160, FOOTER = 60;
   const today = todayStr();
@@ -2374,7 +3026,6 @@ function exportPNG() {
   const year = parseInt(tp[0]), month = parseInt(tp[1]);
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-  // Gather this month's data
   const daysInMonth = new Date(year, month, 0).getDate();
   const rows = [];
   let monthTotal = 0;
@@ -2390,21 +3041,17 @@ function exportPNG() {
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Background
   ctx.fillStyle = '#020408';
   ctx.fillRect(0, 0, W, H);
 
-  // Grid lines
   ctx.strokeStyle = 'rgba(0,212,255,0.04)';
   ctx.lineWidth = 1;
   for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
   for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
 
-  // Top accent bar
   ctx.fillStyle = '#00d4ff';
   ctx.fillRect(0, 0, W, 3);
 
-  // Title
   ctx.font = 'bold 28px monospace';
   ctx.fillStyle = '#00d4ff';
   ctx.fillText('CHRONOS', 40, 50);
@@ -2413,22 +3060,18 @@ function exportPNG() {
   ctx.fillStyle = '#3a6a88';
   ctx.fillText('TIMESHEET SYSTEM // by Hasan Urun', 40, 72);
 
-  // Month heading
   ctx.font = 'bold 16px monospace';
   ctx.fillStyle = '#ffaa00';
   ctx.fillText(`${monthNames[month-1].toUpperCase()} ${year}  —  MONTHLY REPORT`, 40, 108);
 
-  // Total
   ctx.font = '12px monospace';
   ctx.fillStyle = '#6a9ab8';
   ctx.fillText(`TOTAL: ${secsToFormatted(monthTotal)}   DAYS ACTIVE: ${rows.length}`, 40, 132);
 
-  // Divider
   ctx.strokeStyle = '#0f2a45';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(40, HEADER - 10); ctx.lineTo(W - 40, HEADER - 10); ctx.stroke();
 
-  // Rows
   const maxSecs = rows.length > 0 ? Math.max(...rows.map(r => r.secs)) : 1;
   const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
@@ -2436,26 +3079,21 @@ function exportPNG() {
     const y = HEADER + i * ROW;
     const isToday = r.ds === today;
 
-    // Row bg
     ctx.fillStyle = isToday ? 'rgba(0,212,255,0.06)' : (i % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent');
     ctx.fillRect(40, y + 4, W - 80, ROW - 4);
 
-    // Left accent
     ctx.fillStyle = isToday ? '#00d4ff' : '#00ffaa';
     ctx.fillRect(40, y + 4, 2, ROW - 8);
 
     const dt = new Date(r.ds + 'T12:00:00');
-    // Day label
     ctx.font = '12px monospace';
     ctx.fillStyle = '#6a9ab8';
     ctx.fillText(`${weekdays[dt.getDay()]} ${String(r.d).padStart(2,' ')}`, 52, y + 26);
 
-    // Time
     ctx.font = 'bold 12px monospace';
     ctx.fillStyle = '#00d4ff';
     ctx.fillText(secsToFormatted(r.secs), 160, y + 26);
 
-    // Bar
     const barX = 290, barW = W - 360, barH = 6;
     const barY = y + 19;
     ctx.fillStyle = '#0f2a45';
@@ -2467,7 +3105,6 @@ function exportPNG() {
     ctx.fillStyle = grad;
     ctx.fillRect(barX, barY, fill, barH);
 
-    // Tasks summary
     const day = data.days[r.ds];
     const taskNames = (day?.tasks || []).filter(t => t.count > 0).map(t => `${t.name}×${t.count}`).join('  ');
     if (taskNames) {
@@ -2484,7 +3121,6 @@ function exportPNG() {
     ctx.fillText('No activity recorded this month.', 40, HEADER + 30);
   }
 
-  // Footer
   const fY = HEADER + Math.max(rows.length, 1) * ROW + 20;
   ctx.strokeStyle = '#0f2a45';
   ctx.beginPath(); ctx.moveTo(40, fY); ctx.lineTo(W - 40, fY); ctx.stroke();
@@ -2492,7 +3128,6 @@ function exportPNG() {
   ctx.fillStyle = '#3a6a88';
   ctx.fillText(`Generated ${today}  •  chronos-timesheet`, 40, fY + 24);
 
-  // Download
   canvas.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2510,7 +3145,6 @@ function download(filename, type, content) {
   a.click();
 }
 
-// ── CLEAR ALL ──
 document.getElementById('clearAllBtn').addEventListener('click', () => {
   if (!confirm('Delete ALL data? This cannot be undone.')) return;
   data = { days: {} };
@@ -2520,7 +3154,6 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
   renderMonthlySide();
 });
 
-// ── NAV BUTTONS ──
 document.getElementById('prevDay').addEventListener('click', () => navigateDay(-1));
 document.getElementById('nextDay').addEventListener('click', () => navigateDay(1));
 document.getElementById('todayBtn').addEventListener('click', () => {
@@ -2548,7 +3181,6 @@ yearSelect.addEventListener('change', () => { updateDayOptions(); updateDateFrom
 monthSelect.addEventListener('change', () => { updateDayOptions(); updateDateFromSelects(); });
 daySelect.addEventListener('change', updateDateFromSelects);
 
-// ── ONLINE STATUS ──
 const onlineDot = document.getElementById('onlineStatus');
 function updateOnline() {
   onlineDot.textContent = navigator.onLine ? 'ONLINE' : 'OFFLINE';
@@ -2558,151 +3190,12 @@ window.addEventListener('online', updateOnline);
 window.addEventListener('offline', updateOnline);
 updateOnline();
 
-// Auto-save
 setInterval(saveData, 5000);
 window.addEventListener('beforeunload', saveData);
 
-// ── UTILS ──
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-// ── GOALS ──
-const DEFAULT_GOALS = { weekly: 20, monthly: 80 };
-
-function loadGoals() {
-  try {
-    const raw = localStorage.getItem('chronos_goals');
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return { ...DEFAULT_GOALS };
-}
-
-function saveGoals() {
-  localStorage.setItem('chronos_goals', JSON.stringify(goals));
-}
-
-let goals = loadGoals();
-
-function getWeekSecs() {
-  const today = new Date();
-  // Start of week = last Monday (or today if Monday)
-  const day = today.getDay(); // 0=Sun
-  const diffToMon = (day === 0) ? -6 : 1 - day;
-  const weekDates = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + diffToMon + i);
-    weekDates.push(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`);
-  }
-  return weekDates.reduce((sum, ds) => sum + calcDayTotalSecs(ds), 0);
-}
-
-function getMonthSecs() {
-  const today = new Date();
-  const year = today.getFullYear(), month = today.getMonth() + 1;
-  const daysInMonth = new Date(year, month, 0).getDate();
-  let total = 0;
-  for (let d = 1; d <= daysInMonth; d++) {
-    total += calcDayTotalSecs(`${year}-${pad(month)}-${pad(d)}`);
-  }
-  return total;
-}
-
-function statusClass(pct) {
-  if (pct >= 100) return 'over';
-  if (pct >= 66)  return 'on-track';
-  if (pct >= 33)  return 'behind';
-  return 'critical';
-}
-
-function renderGoals() {
-  const weekSecs  = getWeekSecs();
-  const monthSecs = getMonthSecs();
-
-  const weekTargetSecs  = goals.weekly  * 3600;
-  const monthTargetSecs = goals.monthly * 3600;
-
-  const weekPct  = Math.min(Math.round((weekSecs  / weekTargetSecs)  * 100), 100);
-  const monthPct = Math.min(Math.round((monthSecs / monthTargetSecs) * 100), 100);
-
-  const weekH  = (weekSecs  / 3600).toFixed(1);
-  const monthH = (monthSecs / 3600).toFixed(1);
-
-  const weekStatus  = statusClass(weekPct);
-  const monthStatus = statusClass(monthPct);
-
-  // Week
-  document.getElementById('weekGoalCurrent').textContent = weekH + 'h';
-  document.getElementById('weekGoalCurrent').className   = 'goal-current ' + weekStatus;
-  document.getElementById('weekGoalTarget').textContent  = '/ ' + goals.weekly + 'h';
-  document.getElementById('weekGoalFill').style.width    = weekPct + '%';
-  document.getElementById('weekGoalFill').className      = 'goal-fill ' + weekStatus;
-  const weekLeft = Math.max(0, weekTargetSecs - weekSecs);
-  const weekLeftH = (weekLeft / 3600).toFixed(1);
-  const weekRemEl = document.getElementById('weekGoalRemaining');
-  if (weekSecs >= weekTargetSecs) {
-    weekRemEl.textContent = '✓ TARGET MET  +' + ((weekSecs - weekTargetSecs)/3600).toFixed(1) + 'h extra';
-    weekRemEl.className = 'goal-remaining done';
-  } else {
-    weekRemEl.textContent = weekLeftH + 'h remaining  ·  ' + weekPct + '%';
-    weekRemEl.className = 'goal-remaining';
-  }
-
-  // Month
-  document.getElementById('monthGoalCurrent').textContent = monthH + 'h';
-  document.getElementById('monthGoalCurrent').className   = 'goal-current ' + monthStatus;
-  document.getElementById('monthGoalTarget').textContent  = '/ ' + goals.monthly + 'h';
-  document.getElementById('monthGoalFill').style.width    = monthPct + '%';
-  document.getElementById('monthGoalFill').className      = 'goal-fill ' + monthStatus;
-  const monthLeft = Math.max(0, monthTargetSecs - monthSecs);
-  const monthLeftH = (monthLeft / 3600).toFixed(1);
-  const monthRemEl = document.getElementById('monthGoalRemaining');
-  if (monthSecs >= monthTargetSecs) {
-    monthRemEl.textContent = '✓ TARGET MET  +' + ((monthSecs - monthTargetSecs)/3600).toFixed(1) + 'h extra';
-    monthRemEl.className = 'goal-remaining done';
-  } else {
-    monthRemEl.textContent = monthLeftH + 'h remaining  ·  ' + monthPct + '%';
-    monthRemEl.className = 'goal-remaining';
-  }
-}
-
-function makeGoalEditable(btnId, numbersId, targetId, key, currentId) {
-  document.getElementById(btnId).addEventListener('click', () => {
-    const header = document.getElementById(btnId).closest('.goal-header');
-    const numsEl = header.querySelector('.goal-numbers');
-    const oldVal = goals[key];
-
-    numsEl.innerHTML = `
-      <input class="goal-input" id="gi_${key}" type="number" value="${oldVal}" min="1" max="9999" />
-      <span style="font-size:10px;color:var(--text3)">h</span>
-      <button class="goal-edit-btn" id="gi_${key}_ok" style="color:var(--accent3)">✓</button>
-      <button class="goal-edit-btn" id="gi_${key}_x"  style="color:var(--text3)">✕</button>
-    `;
-
-    const inp = document.getElementById(`gi_${key}`);
-    inp.focus(); inp.select();
-
-    const commit = () => {
-      const v = Math.max(1, parseInt(inp.value) || oldVal);
-      goals[key] = v;
-      saveGoals();
-      renderGoals();
-    };
-
-    const cancel = () => renderGoals();
-
-    document.getElementById(`gi_${key}_ok`).addEventListener('click', commit);
-    document.getElementById(`gi_${key}_x`).addEventListener('click', cancel);
-    inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter') commit();
-      if (e.key === 'Escape') cancel();
-    });
-  });
-}
-
-makeGoalEditable('weekGoalEditBtn',  'weekGoalNumbers',  'weekGoalTarget',  'weekly',  'weekGoalCurrent');
-makeGoalEditable('monthGoalEditBtn', 'monthGoalNumbers', 'monthGoalTarget', 'monthly', 'monthGoalCurrent');
 
 // ── INIT ──
 initSelectors();
@@ -2711,6 +3204,9 @@ updateHeaderStats();
 renderMonthlySide();
 renderGoals();
 renderFavorites();
+renderEarnings();
+// Auto-fetch rate on load
+fetchEurTry();
 </script>
 
 <footer style="text-align:center;padding:24px 16px;margin-top:40px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;line-height:2">
