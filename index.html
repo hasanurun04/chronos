@@ -2295,6 +2295,13 @@ function renderDayView() {
     });
     // refresh any active timer displays after rendering tasks
     Object.keys(activeTimers).forEach(updateTimerDisplay);
+
+    // update derived displays
+    updateTotals();
+    renderLastSession();
+    updateHeaderStats();
+    renderGoals();
+    renderEarnings();
   }
 }
 
