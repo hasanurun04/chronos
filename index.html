@@ -423,7 +423,23 @@
       border: 1px solid var(--border);
       border-left: 2px solid transparent;
       transition: all 0.2s;
-      position: relative;
+      position: relative; /* needed for absolute timer */
+    }
+
+    /* blinking alert when timer finishes */
+    @keyframes alertBlink {
+      0%,100% {
+        border-color: var(--danger);
+        box-shadow: 0 0 8px var(--danger);
+      }
+      50% {
+        border-color: var(--danger);
+        box-shadow: 0 0 24px var(--danger);
+      }
+    }
+
+    .task-entry.timer-alert {
+      animation: alertBlink 0.6s ease-in-out infinite;
     }
 
     .task-entry:hover {
@@ -517,6 +533,50 @@
 
     .cnt-btn:active {
       transform: scale(0.93);
+    }
+
+    /* ── TIMER CONTROLS ── */
+    .task-timer-row {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .timer-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 20px;
+      cursor: pointer;
+      transition: color 0.15s;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .timer-btn:hover {
+      color: var(--accent2);
+    }
+
+    .timer-alert-btn {
+      animation: blinkRed 1s step-start infinite;
+      color: var(--danger);
+    }
+
+    @keyframes blinkRed {
+      0%,100% { color: var(--danger); }
+      50% { color: transparent; }
+    }
+
+    .timer-display {
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      color: var(--accent3);
+      min-width: 40px;
+      text-align: center;
+      /* visible now */
     }
 
     .cnt-val {
@@ -2001,6 +2061,88 @@ let currentDate = todayStr();
 let calViewYear = new Date().getFullYear();
 let calViewMonth = new Date().getMonth();
 
+// ── COUNTDOWN TIMER STATE ──
+// holds running timers keyed by task id
+const activeTimers = {};
+
+// format mm:ss for timer display
+function formatHMSSimple(totalSecs) {
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  return `${pad(m)}:${pad(s)}`;
+}
+
+// start a countdown for one unit of the task; when it finishes increase count
+window.startTimer = function(taskId) {
+  const day = getDayData(currentDate);
+  const task = day.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  // initial duration is one unit (not multiplied by count)
+  let remaining = task.minutes * 60 + task.seconds;
+  // if there's already a timer running clear it first
+  if (activeTimers[taskId]) {
+    clearInterval(activeTimers[taskId].interval);
+  }
+  activeTimers[taskId] = { remaining, interval: null };
+  updateTimerDisplay(taskId);
+  activeTimers[taskId].interval = setInterval(() => {
+    activeTimers[taskId].remaining--;
+    if (activeTimers[taskId].remaining <= 0) {
+      clearInterval(activeTimers[taskId].interval);
+      // mark done but keep entry for blink
+      activeTimers[taskId].done = true;
+
+      const entry = document.querySelector(`.task-entry[data-task-id="${taskId}"]`);
+      const btn = document.getElementById(`timerBtn_${taskId}`);
+      if (entry) entry.classList.add('timer-alert');
+      if (btn) btn.classList.add('timer-alert-btn');
+    } else {
+      updateTimerDisplay(taskId);
+    }
+  }, 1000);
+  renderDayView();
+};
+
+window.stopTimer = function(taskId) {
+  if (activeTimers[taskId]) {
+    clearInterval(activeTimers[taskId].interval);
+    delete activeTimers[taskId];
+    // also remove any alert classes in case they remained
+    const entry = document.querySelector(`.task-entry[data-task-id="${taskId}"]`);
+    if (entry) entry.classList.remove('timer-alert');
+    const btn = document.getElementById(`timerBtn_${taskId}`);
+    if (btn) btn.classList.remove('timer-alert-btn');
+    renderDayView();
+  }
+};
+
+window.toggleTimer = function(taskId) {
+  const t = activeTimers[taskId];
+  if (t) {
+    if (t.done) {
+      // user acknowledges completion
+      increaseCount(taskId);
+      stopTimer(taskId);
+    } else {
+      stopTimer(taskId);
+    }
+  } else {
+    startTimer(taskId);
+  }
+};
+
+function updateTimerDisplay(taskId) {
+  const btn = document.querySelector(`.task-entry[data-task-id="${taskId}"] .timer-btn`);
+  const disp = document.getElementById(`timer_${taskId}`);
+  if (btn) {
+    const rem = activeTimers[taskId]?.remaining ?? 0;
+    btn.title = formatHMSSimple(rem);
+    if (disp) disp.textContent = formatHMSSimple(rem);
+  }
+}
+
+
+
 const yearSelect = document.getElementById('yearSelect');
 const monthSelect = document.getElementById('monthSelect');
 const daySelect = document.getElementById('daySelect');
@@ -2090,6 +2232,8 @@ function renderDayView() {
       const div = document.createElement('div');
       div.className = 'task-entry' + (task.count > 0 ? ' has-count' : '');
       const isStarred = isFavorite(task.name, task.minutes, task.seconds);
+      const isRunning = !!activeTimers[task.id];
+      const remaining = isRunning ? activeTimers[task.id].remaining : (task.minutes * 60 + task.seconds);
       div.innerHTML = `
         <div class="task-top-row">
           <div class="task-info">
@@ -2107,6 +2251,10 @@ function renderDayView() {
             <div class="cnt-val">${task.count}</div>
             <button class="cnt-btn" onclick="increaseCount('${task.id}')">+</button>
           </div>
+        </div>
+        <div class="task-timer-row">
+          <button class="cnt-btn timer-btn" id="timerBtn_${task.id}" title="${formatHMSSimple(remaining)}" onclick="toggleTimer('${task.id}')">${isRunning ? '■' : '▶'}</button>
+          <div class="timer-display" id="timer_${task.id}">${formatHMSSimple(remaining)}</div>
         </div>
         <div class="task-bottom-row">
           <div class="task-subtotal">${secsToFormatted(taskSecs)}</div>
@@ -2145,13 +2293,9 @@ function renderDayView() {
       });
       dayTaskList.appendChild(div);
     });
+    // refresh any active timer displays after rendering tasks
+    Object.keys(activeTimers).forEach(updateTimerDisplay);
   }
-
-  updateTotals();
-  renderLastSession();
-  updateHeaderStats();
-  renderGoals();
-  renderEarnings();
 }
 
 function updateTotals() {
@@ -2183,6 +2327,8 @@ let undoTimer = null;
 let undoProgressTimer = null;
 
 window.removeTask = function(taskId, taskName, taskMins, taskSecs, taskCount) {
+  // clear any running timer for this task
+  if (activeTimers[taskId]) stopTimer(taskId);
   const day = getDayData(currentDate);
   const task = day.tasks.find(t => t.id === taskId);
   if (!task) return;
@@ -3147,6 +3293,8 @@ function download(filename, type, content) {
 
 document.getElementById('clearAllBtn').addEventListener('click', () => {
   if (!confirm('Delete ALL data? This cannot be undone.')) return;
+  // stop any active timers first
+  Object.keys(activeTimers).forEach(id => stopTimer(id));
   data = { days: {} };
   saveData();
   renderDayView();
