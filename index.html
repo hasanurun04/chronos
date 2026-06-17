@@ -154,6 +154,30 @@
       font-size: 13px;
     }
 
+    /* ── SYNC STATUS ── */
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+    .sync-status:hover { border-color: var(--accent); color: var(--accent); }
+    .sync-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sync-idle  { background: var(--text3); }
+    .sync-saving { background: var(--warn); box-shadow: 0 0 8px var(--warn); animation: blink 0.8s ease-in-out infinite; }
+    .sync-ok    { background: var(--accent3); box-shadow: 0 0 8px var(--accent3); }
+    .sync-error { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
     /* ── TABS ── */
     .tabs {
       display: flex;
@@ -1696,8 +1720,41 @@
         <div class="sys-stat"><div style="font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:2px">THIS MONTH</div><strong id="hdrMonth">0h</strong></div>
       </div>
       <div class="status-dot" id="onlineStatus">ONLINE</div>
+      <div class="sync-status" id="syncStatusBadge" onclick="openSyncModal()" title="Cloud Sync Settings">
+        <span class="sync-dot sync-idle" id="syncStatusDot"></span>
+        <span id="syncStatusText">LOCAL</span>
+      </div>
     </div>
   </header>
+
+  <!-- SYNC MODAL -->
+  <div id="syncModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center">
+    <div style="background:var(--panel);border:1px solid var(--border2);border-top:3px solid var(--accent);max-width:480px;width:90%;padding:28px;font-family:IBM Plex Mono,monospace;position:relative">
+      <div style="font-family:Orbitron,monospace;font-size:13px;letter-spacing:3px;color:var(--accent);margin-bottom:4px">CLOUD SYNC</div>
+      <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:20px">JSONBin.io — ucretsiz, kayit gerekli</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.8;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);padding:14px">
+        <b style="color:var(--accent3)">Nasil kurulur?</b><br>
+        1. <a href="https://jsonbin.io" target="_blank" style="color:var(--accent)">jsonbin.io</a> — ucretsiz kayit ol<br>
+        2. API Keys sekmesinden Secret Key olustur<br>
+        3. Bins → Create a Bin — icine {} yaz, kaydet<br>
+        4. Bin URL'sindeki ID'yi kopyala (64abc… gibi)
+      </div>
+      <label style="font-size:10px;color:var(--text3);letter-spacing:1px;display:block;margin-bottom:6px">SECRET API KEY ($2b$ ile baslar)</label>
+      <input id="syncApiKeyInput" type="password" placeholder="$2b$10$xxxxxxxxxxxxxxxxxxxx" style="width:100%;background:var(--bg2);border:1px solid var(--border2);color:var(--text);font-family:IBM Plex Mono,monospace;font-size:12px;padding:10px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+      <label style="font-size:10px;color:var(--text3);letter-spacing:1px;display:block;margin-bottom:6px">BIN ID</label>
+      <input id="syncBinIdInput" type="text" placeholder="64abc123def456..." style="width:100%;background:var(--bg2);border:1px solid var(--border2);color:var(--text);font-family:IBM Plex Mono,monospace;font-size:12px;padding:10px;margin-bottom:20px;outline:none;box-sizing:border-box" />
+      <div id="syncModalMsg" style="font-size:11px;min-height:18px;margin-bottom:14px;color:var(--accent3)"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="saveSyncSettings()" style="font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:1px;background:var(--accent);color:var(--bg);border:none;padding:10px 20px;cursor:pointer;flex:1">KAYDET &amp; BAGLAN</button>
+        <button onclick="testSyncConnection()" style="font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:1px;background:transparent;color:var(--accent3);border:1px solid var(--accent3);padding:10px 16px;cursor:pointer">TEST</button>
+        <button onclick="pullAndMerge()" style="font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:1px;background:transparent;color:var(--warn);border:1px solid var(--warn);padding:10px 16px;cursor:pointer" title="Buluttaki veriyi cek, yerel ile birlestir">PULL</button>
+        <button onclick="closeSyncModal()" style="font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:1px;background:transparent;color:var(--text3);border:1px solid var(--border2);padding:10px 16px;cursor:pointer">KAPAT</button>
+      </div>
+      <div style="margin-top:14px;text-align:right">
+        <button onclick="clearSyncSettings()" style="font-family:IBM Plex Mono,monospace;font-size:10px;background:none;border:none;color:var(--danger);cursor:pointer;letter-spacing:1px">SYNCI DEVRE DISI BIRAK</button>
+      </div>
+    </div>
+  </div>
 
   <!-- TABS -->
   <div class="tabs">
@@ -1984,6 +2041,63 @@
 
 <script>
 const STORAGE_KEY = 'chronos_v1';
+
+// ── JSONBIN SYNC ──
+const SYNC_KEY = 'chronos_sync_cfg';
+let syncCfg = (() => { try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || {}; } catch(e) { return {}; } })();
+
+function saveSyncCfg() {
+  localStorage.setItem(SYNC_KEY, JSON.stringify(syncCfg));
+}
+
+function syncEnabled() {
+  return !!(syncCfg.apiKey && syncCfg.binId);
+}
+
+let _saveTimer = null;
+let _syncStatus = 'idle'; // idle | saving | error | ok
+
+function setSyncStatus(s, msg) {
+  _syncStatus = s;
+  const el = document.getElementById('syncStatusDot');
+  const tx = document.getElementById('syncStatusText');
+  if (!el || !tx) return;
+  el.className = 'sync-dot sync-' + s;
+  const map = { idle: 'LOCAL', saving: 'SYNCING…', error: 'SYNC ERR', ok: 'SYNCED' };
+  tx.textContent = msg || map[s] || s.toUpperCase();
+}
+
+async function pushToCloud() {
+  if (!syncEnabled()) return;
+  setSyncStatus('saving');
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${syncCfg.binId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': syncCfg.apiKey },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error(res.status);
+    setSyncStatus('ok');
+    setTimeout(() => setSyncStatus('idle'), 2000);
+  } catch(e) {
+    setSyncStatus('error', 'SYNC ERR');
+  }
+}
+
+async function pullFromCloud() {
+  if (!syncEnabled()) return null;
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${syncCfg.binId}/latest`, {
+      headers: { 'X-Master-Key': syncCfg.apiKey }
+    });
+    if (!res.ok) throw new Error(res.status);
+    const json = await res.json();
+    return json.record || null;
+  } catch(e) {
+    return null;
+  }
+}
+
 let data = loadData();
 
 function loadData() {
@@ -2018,6 +2132,11 @@ function saveData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch(e) {}
+  // Debounced cloud push
+  if (syncEnabled()) {
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(pushToCloud, 1500);
+  }
 }
 
 function getDayData(dateStr) {
@@ -3347,6 +3466,131 @@ updateOnline();
 
 setInterval(saveData, 5000);
 window.addEventListener('beforeunload', saveData);
+
+// ── SYNC MODAL FUNCTIONS ──
+function openSyncModal() {
+  const modal = document.getElementById('syncModal');
+  modal.style.display = 'flex';
+  document.getElementById('syncApiKeyInput').value = syncCfg.apiKey || '';
+  document.getElementById('syncBinIdInput').value = syncCfg.binId || '';
+  document.getElementById('syncModalMsg').textContent = '';
+}
+
+function closeSyncModal() {
+  document.getElementById('syncModal').style.display = 'none';
+}
+
+document.getElementById('syncModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSyncModal();
+});
+
+function saveSyncSettings() {
+  const key = document.getElementById('syncApiKeyInput').value.trim();
+  const bin = document.getElementById('syncBinIdInput').value.trim();
+  const msg = document.getElementById('syncModalMsg');
+  if (!key || !bin) { msg.style.color = 'var(--danger)'; msg.textContent = 'Her iki alanı da doldur.'; return; }
+  syncCfg.apiKey = key;
+  syncCfg.binId = bin;
+  saveSyncCfg();
+  msg.style.color = 'var(--accent3)';
+  msg.textContent = 'Kaydedildi! Bağlantı test ediliyor…';
+  testSyncConnection();
+}
+
+async function testSyncConnection() {
+  const msg = document.getElementById('syncModalMsg');
+  const key = document.getElementById('syncApiKeyInput').value.trim();
+  const bin = document.getElementById('syncBinIdInput').value.trim();
+  if (!key || !bin) { msg.style.color='var(--danger)'; msg.textContent='Önce kaydet.'; return; }
+  msg.style.color = 'var(--warn)';
+  msg.textContent = 'Test ediliyor…';
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + bin + '/latest', {
+      headers: { 'X-Master-Key': key }
+    });
+    if (res.ok) {
+      msg.style.color = 'var(--accent3)';
+      msg.textContent = '✓ Bağlantı başarılı! Veri bulundu.';
+      setSyncStatus('ok', 'SYNCED');
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } else {
+      const j = await res.json().catch(() => ({}));
+      msg.style.color = 'var(--danger)';
+      msg.textContent = '✗ Hata: ' + (j.message || res.status);
+    }
+  } catch(e) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = '✗ Ağ hatası: ' + e.message;
+  }
+}
+
+async function pullAndMerge() {
+  const msg = document.getElementById('syncModalMsg');
+  msg.style.color = 'var(--warn)';
+  msg.textContent = 'Buluttan çekiliyor…';
+  const remote = await pullFromCloud();
+  if (!remote) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = '✗ Çekilemedi. Ayarları kontrol et.';
+    return;
+  }
+  const remoteDays = remote.days || {};
+  const localCount = Object.keys(data.days).length;
+  const remoteCount = Object.keys(remoteDays).length;
+  const merged = Object.assign({}, remoteDays, data.days);
+  // Merge: her tarih için her iki taraftaki task'ları birleştir
+  Object.keys(remoteDays).forEach(ds => {
+    if (data.days[ds]) {
+      // Her iki tarafta da var — lokalin count'unu koru, eksik task'ları ekle
+      const localTaskIds = new Set((data.days[ds].tasks||[]).map(t=>t.id));
+      const extraTasks = (remoteDays[ds].tasks||[]).filter(t => !localTaskIds.has(t.id));
+      merged[ds] = { tasks: [...(data.days[ds].tasks||[]), ...extraTasks] };
+    }
+  });
+  data.days = merged;
+  saveData();
+  renderDayView();
+  updateHeaderStats();
+  renderMonthlySide();
+  msg.style.color = 'var(--accent3)';
+  msg.textContent = '✓ Merge tamam! Lokal:' + localCount + ' Uzak:' + remoteCount + ' kayıt.';
+}
+
+function clearSyncSettings() {
+  if (!confirm('Cloud sync devre dışı bırakılsın mı? Veriler silinmez, sadece senkronizasyon durur.')) return;
+  syncCfg = {};
+  saveSyncCfg();
+  document.getElementById('syncApiKeyInput').value = '';
+  document.getElementById('syncBinIdInput').value = '';
+  setSyncStatus('idle', 'LOCAL');
+  const msg = document.getElementById('syncModalMsg');
+  msg.style.color = 'var(--text3)';
+  msg.textContent = 'Sync devre dışı bırakıldı.';
+}
+
+// Sayfa açıldığında sync durumunu güncelle ve eğer sync etkinse pull et
+(async function initSync() {
+  if (syncEnabled()) {
+    setSyncStatus('saving', 'YÜKLENIYOR');
+    const remote = await pullFromCloud();
+    if (remote && remote.days) {
+      // Remote ve local merge et (remote öncelik: daha fazla veri olabilir)
+      const merged = Object.assign({}, data.days);
+      Object.keys(remote.days).forEach(ds => {
+        if (!merged[ds]) {
+          merged[ds] = remote.days[ds];
+        }
+      });
+      data.days = merged;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      renderDayView();
+      updateHeaderStats();
+      renderMonthlySide();
+    }
+    setSyncStatus('ok', 'SYNCED');
+    setTimeout(() => setSyncStatus('idle'), 2000);
+  }
+})();
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
