@@ -450,20 +450,27 @@
       position: relative; /* needed for absolute timer */
     }
 
-    /* blinking alert when timer finishes */
-    @keyframes alertBlink {
-      0%,100% {
-        border-color: var(--danger);
-        box-shadow: 0 0 8px var(--danger);
-      }
-      50% {
-        border-color: var(--danger);
-        box-shadow: 0 0 24px var(--danger);
-      }
+    /* timer complete: shake + scale + glow */
+    @keyframes timerShake {
+      0%   { transform: scale(1.08) translateX(0); border-color: var(--danger); box-shadow: 0 0 32px rgba(255,34,68,0.7); }
+      15%  { transform: scale(1.08) translateX(-7px); }
+      30%  { transform: scale(1.08) translateX(7px); }
+      45%  { transform: scale(1.08) translateX(-5px); }
+      60%  { transform: scale(1.08) translateX(5px); }
+      75%  { transform: scale(1.08) translateX(-3px); }
+      90%  { transform: scale(1.08) translateX(3px); }
+      100% { transform: scale(1.08) translateX(0); border-color: var(--danger); box-shadow: 0 0 32px rgba(255,34,68,0.7); }
+    }
+
+    @keyframes timerPulseGlow {
+      0%,100% { box-shadow: 0 0 24px rgba(255,34,68,0.6), 0 0 60px rgba(255,34,68,0.2); border-color: var(--danger); transform: scale(1.06); }
+      50%      { box-shadow: 0 0 48px rgba(255,34,68,0.9), 0 0 100px rgba(255,34,68,0.4); border-color: var(--danger); transform: scale(1.08); }
     }
 
     .task-entry.timer-alert {
-      animation: alertBlink 0.6s ease-in-out infinite;
+      animation: timerShake 0.5s ease-in-out, timerPulseGlow 1.2s ease-in-out 0.5s infinite;
+      z-index: 10;
+      position: relative;
     }
 
     .task-entry:hover {
@@ -1700,6 +1707,62 @@
       background: var(--accent4);
       transition: width linear;
     }
+
+    /* ── ACTIVE TIMER BANNER ── */
+    #timerBanner {
+      display: none;
+      position: sticky;
+      top: 8px;
+      z-index: 100;
+      margin-bottom: 12px;
+      padding: 10px 16px;
+      background: var(--panel2);
+      border: 1px solid var(--accent3);
+      border-left: 4px solid var(--accent3);
+      box-shadow: 0 0 20px rgba(0,255,170,0.15);
+      cursor: pointer;
+      align-items: center;
+      gap: 12px;
+    }
+    #timerBanner.visible { display: flex; }
+    #timerBanner:hover { background: rgba(0,255,170,0.06); }
+
+    .tb-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent3);
+      box-shadow: 0 0 8px var(--accent3);
+      flex-shrink: 0;
+      animation: blink 1s ease-in-out infinite;
+    }
+    .tb-name {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tb-time {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      color: var(--accent3);
+      letter-spacing: 2px;
+      flex-shrink: 0;
+    }
+    .tb-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── RUNNING TASK CARD BORDER ── */
+    .task-entry.timer-running {
+      border-left: 3px solid var(--danger) !important;
+      background: rgba(255,34,68,0.03);
+    }
   </style>
 </head>
 <body>
@@ -1754,6 +1817,14 @@
         <button onclick="clearSyncSettings()" style="font-family:IBM Plex Mono,monospace;font-size:10px;background:none;border:none;color:var(--danger);cursor:pointer;letter-spacing:1px">SYNCI DEVRE DISI BIRAK</button>
       </div>
     </div>
+  </div>
+
+  <!-- ACTIVE TIMER BANNER -->
+  <div id="timerBanner" onclick="scrollToActiveTimer()">
+    <div class="tb-dot"></div>
+    <span class="tb-label">RUNNING</span>
+    <span class="tb-name" id="tbName">—</span>
+    <span class="tb-time" id="tbTime">00:00</span>
   </div>
 
   <!-- TABS -->
@@ -2191,6 +2262,29 @@ function formatHMSSimple(totalSecs) {
   return `${pad(m)}:${pad(s)}`;
 }
 
+function playTimerDoneSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const beeps = [
+      { freq: 880, start: 0,    dur: 0.12 },
+      { freq: 880, start: 0.18, dur: 0.12 },
+      { freq: 1320, start: 0.36, dur: 0.22 },
+    ];
+    beeps.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    });
+  } catch(e) {}
+}
+
 // start a countdown for one unit of the task; when it finishes increase count
 window.startTimer = function(taskId) {
   const day = getDayData(currentDate);
@@ -2215,6 +2309,8 @@ window.startTimer = function(taskId) {
       const btn = document.getElementById(`timerBtn_${taskId}`);
       if (entry) entry.classList.add('timer-alert');
       if (btn) btn.classList.add('timer-alert-btn');
+      playTimerDoneSound();
+      updateTimerBanner();
     } else {
       updateTimerDisplay(taskId);
     }
@@ -2231,6 +2327,7 @@ window.stopTimer = function(taskId) {
     if (entry) entry.classList.remove('timer-alert');
     const btn = document.getElementById(`timerBtn_${taskId}`);
     if (btn) btn.classList.remove('timer-alert-btn');
+    updateTimerBanner();
     renderDayView();
   }
 };
@@ -2258,6 +2355,36 @@ function updateTimerDisplay(taskId) {
     btn.title = formatHMSSimple(rem);
     if (disp) disp.textContent = formatHMSSimple(rem);
   }
+  updateTimerBanner();
+}
+
+function updateTimerBanner() {
+  const banner = document.getElementById('timerBanner');
+  const tbName = document.getElementById('tbName');
+  const tbTime = document.getElementById('tbTime');
+
+  // Çalışan (done olmayan) timer var mı bul
+  const runningId = Object.keys(activeTimers).find(id => !activeTimers[id].done);
+
+  if (!runningId) {
+    banner.classList.remove('visible');
+    return;
+  }
+
+  const day = getDayData(currentDate);
+  const task = day.tasks.find(t => t.id === runningId);
+  if (!task) { banner.classList.remove('visible'); return; }
+
+  tbName.textContent = task.name;
+  tbTime.textContent = formatHMSSimple(activeTimers[runningId].remaining);
+  banner.classList.add('visible');
+}
+
+function scrollToActiveTimer() {
+  const runningId = Object.keys(activeTimers).find(id => !activeTimers[id].done);
+  if (!runningId) return;
+  const el = document.querySelector(`.task-entry[data-task-id="${runningId}"]`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 
@@ -2349,10 +2476,10 @@ function renderDayView() {
     tasks.forEach(task => {
       const taskSecs = (task.minutes * 60 + task.seconds) * task.count;
       const div = document.createElement('div');
-      div.className = 'task-entry' + (task.count > 0 ? ' has-count' : '');
       const isStarred = isFavorite(task.name, task.minutes, task.seconds);
       const isRunning = !!activeTimers[task.id];
       const remaining = isRunning ? activeTimers[task.id].remaining : (task.minutes * 60 + task.seconds);
+      div.className = 'task-entry' + (task.count > 0 ? ' has-count' : '') + (isRunning && !activeTimers[task.id]?.done ? ' timer-running' : '');
       div.innerHTML = `
         <div class="task-top-row">
           <div class="task-info">
@@ -2438,7 +2565,12 @@ function updateTotals() {
 window.increaseCount = function(taskId) {
   const day = getDayData(currentDate);
   const task = day.tasks.find(t => t.id === taskId);
-  if (task) { task.count++; saveData(); renderDayView(); }
+  if (!task) return;
+  // Timer çalışıyorsa veya bitti-bekliyorsa durdur, sonra say artır
+  if (activeTimers[taskId]) stopTimer(taskId);
+  task.count++;
+  saveData();
+  renderDayView();
 };
 
 window.decreaseCount = function(taskId) {
@@ -2605,15 +2737,16 @@ function renderFavorites() {
 }
 
 document.getElementById('addTaskBtn').addEventListener('click', () => {
-  const name = document.getElementById('newTaskName').value.trim();
   const mins = Math.max(0, parseInt(document.getElementById('newTaskMins').value) || 0);
   const secs = Math.max(0, Math.min(59, parseInt(document.getElementById('newTaskSecs').value) || 0));
 
-  if (!name) { document.getElementById('newTaskName').focus(); return; }
   if (mins === 0 && secs === 0) { alert('Duration must be > 0'); return; }
 
+  const rawName = document.getElementById('newTaskName').value.trim();
+  const name = rawName || `${mins}:${String(secs).padStart(2, '0')}`;
+
   const day = getDayData(currentDate);
-  day.tasks.push({ id: uid(), name, minutes: mins, seconds: secs, count: 1 });
+  day.tasks.push({ id: uid(), name, minutes: mins, seconds: secs, count: 0 });
   saveData();
   renderDayView();
 
@@ -2643,16 +2776,7 @@ function renderLastSession() {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   document.getElementById('lsDate').textContent = `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
   document.getElementById('lsTime').textContent = secsToFormatted(calcDayTotalSecs(lastDate));
-
-  const tasks = data.days[lastDate].tasks || [];
-  const lsTasksEl = document.getElementById('lsTasks');
-  lsTasksEl.innerHTML = '';
-  tasks.forEach(t => {
-    if (t.count > 0) {
-      const secs = (t.minutes * 60 + t.seconds) * t.count;
-      lsTasksEl.innerHTML += `<div class="ls-task"><span class="n">${escHtml(t.name)} ×${t.count}</span><span class="v">${secsToFormatted(secs)}</span></div>`;
-    }
-  });
+  document.getElementById('lsTasks').innerHTML = '';
 }
 
 // ── MONTHLY MINI SIDE ──
