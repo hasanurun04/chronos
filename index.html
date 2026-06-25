@@ -1647,15 +1647,6 @@
       to { transform: rotate(360deg); }
     }
 
-    .task-entry.dragging {
-      opacity: 0.4;
-      border-left-color: var(--accent) !important;
-      background: rgba(0, 212, 255, 0.08) !important;
-    }
-    .task-entry.drag-over {
-      border-top: 2px solid var(--accent);
-    }
-
     /* ── UNDO TOAST ── */
     #undoToast {
       position: fixed;
@@ -2473,7 +2464,8 @@ function renderDayView() {
     dayEmptyState.style.display = 'block';
   } else {
     dayEmptyState.style.display = 'none';
-    tasks.forEach(task => {
+    const sortedTasks = [...tasks].sort((a, b) => (a.minutes * 60 + a.seconds) - (b.minutes * 60 + b.seconds));
+    sortedTasks.forEach(task => {
       const taskSecs = (task.minutes * 60 + task.seconds) * task.count;
       const div = document.createElement('div');
       const isStarred = isFavorite(task.name, task.minutes, task.seconds);
@@ -2506,37 +2498,7 @@ function renderDayView() {
           <div class="task-subtotal">${secsToFormatted(taskSecs)}</div>
         </div>
       `;
-      div.draggable = true;
       div.dataset.taskId = task.id;
-      div.addEventListener('dragstart', e => {
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', task.id);
-        div.classList.add('dragging');
-      });
-      div.addEventListener('dragend', () => {
-        div.classList.remove('dragging');
-        document.querySelectorAll('.task-entry').forEach(el => el.classList.remove('drag-over'));
-      });
-      div.addEventListener('dragover', e => {
-        e.preventDefault();
-        document.querySelectorAll('.task-entry').forEach(el => el.classList.remove('drag-over'));
-        div.classList.add('drag-over');
-      });
-      div.addEventListener('drop', e => {
-        e.preventDefault();
-        div.classList.remove('drag-over');
-        const fromId = e.dataTransfer.getData('text/plain');
-        const toId = task.id;
-        if (fromId === toId) return;
-        const day = getDayData(currentDate);
-        const fromIdx = day.tasks.findIndex(t => t.id === fromId);
-        const toIdx = day.tasks.findIndex(t => t.id === toId);
-        if (fromIdx === -1 || toIdx === -1) return;
-        const [moved] = day.tasks.splice(fromIdx, 1);
-        day.tasks.splice(toIdx, 0, moved);
-        saveData();
-        renderDayView();
-      });
       dayTaskList.appendChild(div);
     });
     // refresh any active timer displays after rendering tasks
