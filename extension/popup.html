@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chronos Auto Tracker</title>
+  <style>
+    body {
+      width: 250px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #020408;
+      color: #c8e8f8;
+    }
+    h2 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      color: #00d4ff;
+      text-align: center;
+      border-bottom: 1px solid #1a3d5c;
+      padding-bottom: 8px;
+    }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .setting-label {
+      font-size: 14px;
+    }
+    
+    /* Toggle Switch CSS */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #1a3d5c;
+      transition: .3s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #050c14;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #00ffaa;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: #020408;
+    }
+    .status-text {
+      text-align: center;
+      font-size: 12px;
+      margin-top: 16px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <h2>Chronos Auto Tracker</h2>
+  
+  <div class="setting-row">
+    <span class="setting-label">Auto Tracking</span>
+    <label class="switch">
+      <input type="checkbox" id="toggleTracking" checked>
+      <span class="slider"></span>
+    </label>
+  </div>
+  
+  <div class="status-text" id="statusMessage">
+    Tracking is ACTIVE.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

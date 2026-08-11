@@ -2,18 +2,35 @@ let currentRequestId = null;
 let widgetTimerInterval = null;
 let widgetTotalSeconds = 0;
 let lastKnownTotal = "00:00";
+let isTrackingEnabled = true;
+
+try {
+  chrome.storage.local.get(['trackingEnabled'], (res) => {
+    if (res.trackingEnabled === false) isTrackingEnabled = false;
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.trackingEnabled !== undefined) {
+      isTrackingEnabled = changes.trackingEnabled.newValue;
+      if (!isTrackingEnabled) {
+        removeWidget();
+        currentRequestId = null;
+      }
+    }
+  });
+} catch (e) {}
 
 function parseERT(timeString) {
   let minutes = 0;
   let seconds = 0;
-  const minMatch = timeString.match(/(\d+)\s*m/i);
-  if (minMatch) minutes = parseInt(minMatch[1], 10);
+  const minMatch = timeString.match(/([\d\.]+)\s*m/i);
+  if (minMatch) minutes = parseFloat(minMatch[1]);
   const secMatch = timeString.match(/(\d+)\s*s/i);
   if (secMatch) seconds = parseInt(secMatch[1], 10);
   
   if (minutes === 0 && seconds === 0) {
-    const numMatch = timeString.match(/(\d+)/);
-    if (numMatch) minutes = parseInt(numMatch[1], 10);
+    const numMatch = timeString.match(/([\d\.]+)/);
+    if (numMatch) minutes = parseFloat(numMatch[1]);
   }
   return minutes + (seconds / 60);
 }
@@ -161,6 +178,8 @@ function removeWidget() {
 }
 
 function checkTaskState() {
+  if (!isTrackingEnabled) return;
+
   // Use innerText for foolproof text extraction
   const text = document.body.innerText || document.body.textContent || "";
   
@@ -175,7 +194,7 @@ function checkTaskState() {
     if (taskName.length > 50) taskName = taskName.substring(0, 50) + "...";
     
     let ertValue = 1;
-    const ertMatch = text.match(/Estimated Rating Time\s+([\d\s]+(min|sec)[a-z\s]*(\d+\s*sec[a-z]*)?|\d+)/i);
+    const ertMatch = text.match(/Estimated Rating Time[^0-9]*?(\d+[\d\s\w\.]*)/i);
     if (ertMatch) {
       ertValue = parseERT(ertMatch[1]);
       if (ertValue <= 0) ertValue = 1;
