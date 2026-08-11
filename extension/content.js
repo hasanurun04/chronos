@@ -42,42 +42,60 @@ try {
 function initWidget(taskName, ertValue) {
   removeWidget();
   
+  const ertMins = Math.floor(ertValue);
+  const ertSecs = Math.round((ertValue - ertMins) * 60);
+  const ertFormatted = `${ertMins}:${String(ertSecs).padStart(2, '0')}`;
+  
   const widget = document.createElement('div');
   widget.id = 'chronos-tracker-widget';
   
   widget.innerHTML = `
-    <div id="chronos-widget-header" style="cursor: move; background: #020408; color: #00d4ff; padding: 8px 12px; font-family: monospace; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a3d5c; user-select: none;">
-      <span>Chronos Auto Tracker</span>
-      <span style="font-size: 14px; opacity: 0.7; cursor: nwse-resize;">↘</span>
+    <div id="chronos-widget-header" style="cursor: move; background: #020408; color: #00d4ff; padding: 4px 6px; font-family: monospace; font-size: 10px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #1a3d5c; user-select: none;">
+      <span style="word-break: break-word; line-height: 1.2; text-align: left; flex: 1; margin-right: 4px;">Chronos Tracker</span>
+      <span style="font-size: 12px; opacity: 0.7; cursor: nwse-resize;">↘</span>
     </div>
-    <div style="padding: 12px; background: #050c14; color: #c8e8f8; font-family: monospace; display: flex; flex-direction: column; gap: 8px; height: calc(100% - 33px);">
-      <div style="font-size: 11px; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${taskName}">${taskName}</div>
-      <div style="font-size: 32px; font-weight: bold; color: #00ffaa; text-align: center; margin: auto 0;" id="chronos-widget-timer">00:00</div>
-      <div style="font-size: 11px; color: #6a9ab8; text-align: center; display: flex; justify-content: space-between;">
-        <span>ERT: ${ertValue.toFixed(2)} min</span>
-        <span>Today: <strong id="chronos-widget-today" style="color:#00d4ff;">${lastKnownTotal}</strong></span>
+    <div style="padding: 6px; background: #050c14; color: #c8e8f8; font-family: monospace; display: flex; flex-direction: column; gap: 4px; flex: 1; overflow: hidden;">
+      <div style="font-size: 10px; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${taskName}">${taskName}</div>
+      <div style="font-size: 24px; font-weight: bold; color: #00ffaa; text-align: center; margin: auto 0; line-height: 1; display: flex; align-items: center; justify-content: center; height: 100%;" id="chronos-widget-timer">00:00</div>
+      <div style="font-size: 10px; color: #6a9ab8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px;">
+        <span>ERT:${ertFormatted}</span>
+        <span style="color:#00d4ff;" id="chronos-widget-today">${lastKnownTotal}</span>
       </div>
     </div>
   `;
   
+  const savedWidth = localStorage.getItem('chronos_widget_width') || '140px';
+  const savedHeight = localStorage.getItem('chronos_widget_height') || '90px';
+  const savedLeft = localStorage.getItem('chronos_widget_left');
+  const savedTop = localStorage.getItem('chronos_widget_top');
+  
   Object.assign(widget.style, {
     position: 'fixed',
-    bottom: '30px',
-    right: '30px',
-    width: '240px',
-    height: '140px',
+    bottom: (savedLeft && savedTop) ? 'auto' : '20px',
+    right: (savedLeft && savedTop) ? 'auto' : '20px',
+    left: savedLeft || 'auto',
+    top: savedTop || 'auto',
+    width: savedWidth,
+    height: savedHeight,
     zIndex: '999999',
-    border: '2px solid #00d4ff',
-    borderRadius: '8px',
+    border: '1px solid #00d4ff',
+    borderRadius: '6px',
     overflow: 'hidden',
-    boxShadow: '0 12px 32px rgba(0,0,0,0.8)',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
     resize: 'both',
-    minWidth: '180px',
-    minHeight: '120px',
-    transition: 'opacity 0.3s'
+    minWidth: '50px',
+    minHeight: '60px',
+    display: 'flex',
+    flexDirection: 'column'
   });
   
   document.body.appendChild(widget);
+  
+  // Track resizing
+  new ResizeObserver(() => {
+    if (widget.style.width) localStorage.setItem('chronos_widget_width', widget.style.width);
+    if (widget.style.height) localStorage.setItem('chronos_widget_height', widget.style.height);
+  }).observe(widget);
   
   const header = widget.querySelector('#chronos-widget-header');
   let isDragging = false, startX, startY, initialX, initialY;
@@ -94,12 +112,29 @@ function initWidget(taskName, ertValue) {
     widget.style.left = initialX + 'px';
     widget.style.top = initialY + 'px';
   });
-  document.addEventListener('mousemove', (e) => {
+  
+  const mouseMoveHandler = (e) => {
     if (!isDragging) return;
     widget.style.left = (initialX + (e.clientX - startX)) + 'px';
     widget.style.top = (initialY + (e.clientY - startY)) + 'px';
-  });
-  document.addEventListener('mouseup', () => isDragging = false);
+  };
+  
+  const mouseUpHandler = () => {
+    if (isDragging) {
+      isDragging = false;
+      localStorage.setItem('chronos_widget_left', widget.style.left);
+      localStorage.setItem('chronos_widget_top', widget.style.top);
+    }
+  };
+  
+  document.addEventListener('mousemove', mouseMoveHandler);
+  document.addEventListener('mouseup', mouseUpHandler);
+  
+  // Save cleanup refs for when widget is removed
+  widget._cleanup = () => {
+    document.removeEventListener('mousemove', mouseMoveHandler);
+    document.removeEventListener('mouseup', mouseUpHandler);
+  };
   
   widgetTotalSeconds = Math.round(ertValue * 60);
   const timerDisplay = widget.querySelector('#chronos-widget-timer');
@@ -118,7 +153,10 @@ function initWidget(taskName, ertValue) {
 
 function removeWidget() {
   const w = document.getElementById('chronos-tracker-widget');
-  if (w) w.remove();
+  if (w) {
+    if (w._cleanup) w._cleanup();
+    w.remove();
+  }
   clearInterval(widgetTimerInterval);
 }
 
