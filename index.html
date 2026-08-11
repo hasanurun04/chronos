@@ -2512,10 +2512,18 @@ function renderDayView() {
 function updateTotals() {
   const total = calcDayTotalSecs(currentDate);
   const { h, m, s } = secsToHMS(total);
-  document.title = total > 0 ? `CHRONOS - ${secsToFormatted(total)}` : 'CHRONOS';
+  const formattedTime = secsToFormatted(total);
+  document.title = total > 0 ? `CHRONOS - ${formattedTime}` : 'CHRONOS';
   document.getElementById('totalH').textContent = pad(h);
   document.getElementById('totalM').textContent = pad(m);
   document.getElementById('totalS').textContent = pad(s);
+  
+  // Send total to extension (if installed)
+  window.postMessage({
+    type: 'FROM_CHRONOS_PAGE',
+    action: 'SYNC_STATS',
+    payload: { todayTotalFormatted: formattedTime }
+  }, '*');
 }
 
 // ── TASK OPERATIONS ──
@@ -3569,12 +3577,12 @@ function saveSyncSettings() {
   const key = document.getElementById('syncApiKeyInput').value.trim();
   const bin = document.getElementById('syncBinIdInput').value.trim();
   const msg = document.getElementById('syncModalMsg');
-  if (!key || !bin) { msg.style.color = 'var(--danger)'; msg.textContent = 'Her iki alanı da doldur.'; return; }
+  if (!key || !bin) { msg.style.color = 'var(--danger)'; msg.textContent = 'Fill in both fields.'; return; }
   syncCfg.apiKey = key;
   syncCfg.binId = bin;
   saveSyncCfg();
   msg.style.color = 'var(--accent3)';
-  msg.textContent = 'Kaydedildi! Bağlantı test ediliyor…';
+  msg.textContent = 'Saved! Testing connection...';
   testSyncConnection();
 }
 
@@ -3582,37 +3590,37 @@ async function testSyncConnection() {
   const msg = document.getElementById('syncModalMsg');
   const key = document.getElementById('syncApiKeyInput').value.trim();
   const bin = document.getElementById('syncBinIdInput').value.trim();
-  if (!key || !bin) { msg.style.color='var(--danger)'; msg.textContent='Önce kaydet.'; return; }
+  if (!key || !bin) { msg.style.color='var(--danger)'; msg.textContent='Save first.'; return; }
   msg.style.color = 'var(--warn)';
-  msg.textContent = 'Test ediliyor…';
+  msg.textContent = 'Testing...';
   try {
     const res = await fetch('https://api.jsonbin.io/v3/b/' + bin + '/latest', {
       headers: { 'X-Master-Key': key }
     });
     if (res.ok) {
       msg.style.color = 'var(--accent3)';
-      msg.textContent = '✓ Bağlantı başarılı! Veri bulundu.';
+      msg.textContent = '✓ Connection successful! Data found.';
       setSyncStatus('ok', 'SYNCED');
       setTimeout(() => setSyncStatus('idle'), 3000);
     } else {
       const j = await res.json().catch(() => ({}));
       msg.style.color = 'var(--danger)';
-      msg.textContent = '✗ Hata: ' + (j.message || res.status);
+      msg.textContent = '✗ Error: ' + (j.message || res.status);
     }
   } catch(e) {
     msg.style.color = 'var(--danger)';
-    msg.textContent = '✗ Ağ hatası: ' + e.message;
+    msg.textContent = '✗ Network error: ' + e.message;
   }
 }
 
 async function pullAndMerge() {
   const msg = document.getElementById('syncModalMsg');
   msg.style.color = 'var(--warn)';
-  msg.textContent = 'Buluttan çekiliyor…';
+  msg.textContent = 'Pulling from cloud...';
   const remote = await pullFromCloud();
   if (!remote) {
     msg.style.color = 'var(--danger)';
-    msg.textContent = '✗ Çekilemedi. Ayarları kontrol et.';
+    msg.textContent = '✗ Failed to pull. Check settings.';
     return;
   }
   const remoteDays = remote.days || {};
@@ -3634,11 +3642,11 @@ async function pullAndMerge() {
   updateHeaderStats();
   renderMonthlySide();
   msg.style.color = 'var(--accent3)';
-  msg.textContent = '✓ Merge tamam! Lokal:' + localCount + ' Uzak:' + remoteCount + ' kayıt.';
+  msg.textContent = '✓ Merge complete! Local:' + localCount + ' Remote:' + remoteCount + ' records.';
 }
 
 function clearSyncSettings() {
-  if (!confirm('Cloud sync devre dışı bırakılsın mı? Veriler silinmez, sadece senkronizasyon durur.')) return;
+  if (!confirm('Disable cloud sync? Data will not be deleted, only synchronization will stop.')) return;
   syncCfg = {};
   saveSyncCfg();
   document.getElementById('syncApiKeyInput').value = '';
@@ -3646,13 +3654,13 @@ function clearSyncSettings() {
   setSyncStatus('idle', 'LOCAL');
   const msg = document.getElementById('syncModalMsg');
   msg.style.color = 'var(--text3)';
-  msg.textContent = 'Sync devre dışı bırakıldı.';
+  msg.textContent = 'Sync disabled.';
 }
 
 // Sayfa açıldığında sync durumunu güncelle ve eğer sync etkinse pull et
 (async function initSync() {
   if (syncEnabled()) {
-    setSyncStatus('saving', 'YÜKLENIYOR');
+    setSyncStatus('saving', 'LOADING');
     const remote = await pullFromCloud();
     if (remote && remote.days) {
       // Remote ve local merge et (remote öncelik: daha fazla veri olabilir)
@@ -3676,6 +3684,53 @@ function clearSyncSettings() {
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+// ── EXTENSION AUTO-TRACKING LISTENER ──
+let lastAutoTaskId = null;
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'FROM_CHRONOS_EXTENSION') {
+    const { action, payload } = event.data;
+    
+    if (action === 'TASK_STARTED') {
+      const { ert } = payload;
+      const mins = Math.floor(ert);
+      const secs = Math.round((ert - mins) * 60);
+      const timeName = `${mins}:${String(secs).padStart(2, '0')}`;
+      
+      const day = getDayData(currentDate);
+      let existingTask = day.tasks.find(t => t.name === timeName);
+      let taskIdToStart;
+      
+      if (existingTask) {
+        taskIdToStart = existingTask.id;
+      } else {
+        taskIdToStart = uid();
+        day.tasks.push({ id: taskIdToStart, name: timeName, minutes: mins, seconds: secs, count: 0 });
+        saveData();
+        renderDayView();
+      }
+      
+      lastAutoTaskId = taskIdToStart;
+      // Automatically start the timer
+      startTimer(taskIdToStart);
+    } else if (action === 'TASK_SUBMITTED') {
+      if (lastAutoTaskId) {
+        stopTimer(lastAutoTaskId);
+        
+        // Increase the task count since it was submitted
+        const day = getDayData(currentDate);
+        const task = day.tasks.find(t => t.id === lastAutoTaskId);
+        if (task) {
+          task.count++;
+          saveData();
+          renderDayView();
+          updateHeaderStats();
+          renderMonthlySide();
+        }
+        lastAutoTaskId = null;
+      }
+    }
+  }
+});
 
 // ── INIT ──
 initSelectors();

@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Chronos Auto Tracker",
+  "version": "1.0",
+  "description": "Automatically tracks tasks on TryRating and sends data to Chronos.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.tryrating.com/*",
+    "https://chronos-hasan-urun.netlify.app/*",
+    "file:///*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.tryrating.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://chronos-hasan-urun.netlify.app/*", "file:///*chronos_v2/index.html*", "http://localhost/*/chronos_v2/index.html*", "http://127.0.0.1/*/chronos_v2/index.html*"],
+      "js": ["chronos_bridge.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
